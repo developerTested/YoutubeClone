@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ChannelLinks from './ChannelLinks';
 
 const menuItems = [
     {
@@ -43,12 +44,7 @@ export default function ChannelHeader(props) {
                     <img className='block w-full h-auto' src='/img/1.jpg' alt='cover' />
 
                     <div className="block w-auto h-10 px-4 absolute bottom-0 right-0">
-                        <div className="flex items-center gap-2">
-                            {links.length ? links.map((x, i) => <a key={i} href={x.targetUrl} title={x.title} className='flex items-center justify-center'>
-                                <img src={x.icon} className='w-6 h-6 rounded-full' />
-                            </a>
-                            ) : ''}
-                        </div>
+                        <ChannelLinks data={links} />
                     </div>
                 </div>
                 <div className='flex items-center justify-between px-4 py-2'>

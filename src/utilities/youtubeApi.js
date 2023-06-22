@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const config = {
-    baseURL: import.meta.env.VITE_YOUTUBE_API_URL ?? 'http://localhost:3001',
+    baseURL: import.meta.env.VITE_YOUTUBE_API_URL ?? '/api',
     timeout: 60 * 1000,
 };
 
