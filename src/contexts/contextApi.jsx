@@ -6,7 +6,7 @@ export const useApp = () => useContext(Context);
 
 export default function AppContextProvider(props) {
 
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState(null);
     const [mobileMenu, setMobileMenu] = useState(false);
     const [miniMenu, setMiniMenu] = useState(false);

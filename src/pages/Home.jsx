@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import VideoCard from '../components/VideoCard';
 import { useApp } from '../contexts/contextApi';
+import VideoCard from '../components/VideoCard';
 import YoutubeApi from '../utilities/youtubeApi';
 
 export default function HomePage(props) {

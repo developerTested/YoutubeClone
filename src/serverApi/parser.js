@@ -1,4 +1,5 @@
 import axios from "axios";
+import apiList from "./apiRoutes.js";
 
 const youtubeEndpoint = `https://www.youtube.com`;
 
@@ -97,8 +98,6 @@ export const GetData = async (
             }
         }
 
-        console.log(endpoint);
-
         const page = await GetYoutubeInitData(endpoint);
 
         const sectionListRenderer = await page.initdata.contents
@@ -174,7 +173,7 @@ export const nextPage = async (nextPage, withPlaylist = false, limit = 0) => {
                     let videoRender = item.videoRenderer;
                     let playListRender = item.playlistRenderer;
                     if (videoRender && videoRender.videoId) {
-                        items.push(VideoRender(item));
+                        items.push(parseVideoRender(item));
                     }
                     if (withPlaylist) {
                         if (playListRender && playListRender.playlistId) {
@@ -217,7 +216,7 @@ export const GetPlaylistData = async (playlistId, limit = 0) => {
             await videoItems.forEach((item) => {
                 let videoRender = item.playlistVideoRenderer;
                 if (videoRender && videoRender.videoId) {
-                    items.push(VideoRender(item));
+                    items.push(parseVideoRender(item));
                 }
             });
             const itemsResult = limit != 0 ? items.slice(0, limit) : items;
@@ -268,6 +267,48 @@ export const GetChannelById = async (channelId) => {
     try {
         const page = await GetYoutubeInitData(endpoint);
         const tabs = page.initdata.contents.twoColumnBrowseResultsRenderer.tabs;
+        const metadata = page.initdata.metadata.channelMetadataRenderer;
+        const channelHeader = page.initdata.header.c4TabbedHeaderRenderer;
+
+        let verified = false;
+        if (
+            channelHeader.badges &&
+            channelHeader.badges.length > 0 &&
+            channelHeader.badges[0].metadataBadgeRenderer &&
+            channelHeader.badges[0].metadataBadgeRenderer.style ===
+            "BADGE_STYLE_TYPE_VERIFIED"
+        ) {
+            verified = true;
+        }
+
+        const links = [];
+
+        const primaryLinks = channelHeader?.headerLinks?.channelHeaderLinksRenderer?.primaryLinks;
+        const secondaryLinks = channelHeader?.headerLinks?.channelHeaderLinksRenderer?.secondaryLinks;
+
+        if (primaryLinks) {
+            primaryLinks.length && primaryLinks.map((x) => links.push({
+                title: x.title.simpleText,
+                icon: x.icon.thumbnails[0].url,
+                url: x.navigationEndpoint.urlEndpoint.url,
+            }))
+        }
+
+        if (secondaryLinks) {
+            secondaryLinks.length && secondaryLinks.map((x) => links.push({
+                title: x.title.simpleText,
+                icon: x.icon.thumbnails[0].url,
+                url: x.navigationEndpoint.urlEndpoint.url,
+            }))
+        }
+
+        const channel = {
+            id: channelHeader.channelHandleText.runs[0].text,
+            title: metadata.title,
+            avatar: channelHeader.avatar.thumbnails,
+            links,
+            verified,
+        }
 
         const items = tabs
             .map((json) => {
@@ -301,6 +342,7 @@ export const GetChannelById = async (channelId) => {
                             id: json.videoId,
                             type: "video",
                             title: json.title.simpleText,
+                            channel,
                             publishedAt: json.publishedTimeText.simpleText,
                             views: json.shortViewCountText.simpleText,
                             thumbnails: json.thumbnail.thumbnails,
@@ -338,8 +380,15 @@ export const GetChannelById = async (channelId) => {
 
         }
 
+        const channelJson = {
+            ...channel,
+            description: metadata.description,
+            subscriber: channelHeader.subscriberCountText.simpleText,
+            videos: channelHeader.videosCountText?.runs?.map((x) => x.text).join(''),
+            results: results.filter((x) => !x?.title?.includes('Channels')),
+        }
 
-        return await Promise.resolve(results);
+        return await Promise.resolve(channelJson);
     } catch (ex) {
         return await Promise.reject(ex);
     }
@@ -511,14 +560,161 @@ export const compactVideoRenderer = (json) => {
 };
 
 
+export async function getTrending() {
+    const page = await GetYoutubeInitData(apiList['trending']);
+
+    const results = await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
+    const items = results.sectionListRenderer.contents
+        .filter((x) => x.itemSectionRenderer)
+        .map((z) => z.itemSectionRenderer.contents).flat();
+
+    let itemList = [];
+    const otherItems = [];
+    const shortsList = [];
+
+    items.map((x) => {
+
+        if (x.shelfRenderer) {
+            itemList = parseTrending(x.shelfRenderer.content);
+        } else if (x.reelShelfRenderer) {
+            const shortsResult = x.reelShelfRenderer.items;
+            shortsResult.map(({ reelItemRenderer: json }) => shortsList.push({
+                id: json.videoId,
+                type: "reel",
+                thumbnail: json.thumbnail.thumbnails[0],
+                title: json.headline.simpleText,
+            }));
+        } else {
+            return [];
+        }
+
+    })
+
+    return {
+        items: itemList,
+        shorts: shortsList,
+        otherItems,
+    };
+}
+
+export async function getFeed(name) {
+    const youtubeEndpoint = name ? apiList[name] : youtubeEndpoint;
+    const page = await GetYoutubeInitData(youtubeEndpoint);
+
+    const results = await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
+    const items = results.sectionListRenderer.contents
+        .filter((x) => x.itemSectionRenderer)
+        .map((z) => z.itemSectionRenderer.contents).flat();
+
+    const itemList = [];
+    const otherItems = [];
+    const shortsList = [];
+
+
+
+
+
+    items.map((z) => {
+
+
+        if (z.shelfRenderer) {
+
+
+            const contents = z.shelfRenderer.content;
+
+
+            let items = [];
+
+
+            switch (name) {
+                case 'trending':
+                    items = contents.expandedShelfContentsRenderer.items;
+                    itemList.push(parseTrending(z));
+                    break;
+
+                case 'shopping':
+
+                    if (contents.verticalListRenderer) {
+                        items = contents.verticalListRenderer.items;
+                        itemList.push(parseTrending(items));
+                    } else {
+                        return false;
+                    }
+
+                    break;
+
+                case 'music':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'movies':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'live':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'gaming':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'news':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'sports':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'learning':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+                case 'fashion':
+                    items = contents.horizontalListRenderer.items;
+                    itemList.push(parseTrending(items));
+                    break;
+
+
+                default:
+                    break;
+            }
+
+
+        } else if (z.reelShelfRenderer) {
+
+            let items = z.reelShelfRenderer.items;
+
+            const b = items.map(({ reelItemRenderer: x }) => shortsList.push({
+                id: x.videoId,
+                type: "reel",
+                thumbnail: x.thumbnail.thumbnails[0],
+                title: x.headline.simpleText,
+                views: x.viewCountText?.simpleText,
+            }));
+
+        } else {
+            otherItems.push(z)
+        }
+    });
+
+
+    return await Promise.resolve({ items: itemList, otherItems, shortsList });
+}
 
 export const GetHomeFeed = async () => {
     const page = await GetYoutubeInitData(youtubeEndpoint);
 
     const results = await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer.contents
-        .filter((x) => {
-            return x.richSectionRenderer;
-        })
+        .filter((x) => x.richSectionRenderer)
         .map((z) => z.richSectionRenderer.content)
         .filter((y) => y.richShelfRenderer)
         .map((u) => u.richShelfRenderer);
@@ -565,6 +761,10 @@ export const GetShortVideo = async () => {
     }));
 };
 
+
+export function getPlayerFromId(videoId) {
+
+}
 
 
 /**
@@ -706,4 +906,64 @@ function parseChannelRender(response) {
     };
 
     return channel;
+}
+
+function parseTrending(response = []) {
+
+    const items = [];
+
+    if (response.expandedShelfContentsRenderer) {
+        response.expandedShelfContentsRenderer.items.map((x) => {
+            if (x.videoRenderer) {
+                items.push(parseVideoRender(x.videoRenderer));
+            } else {
+                return [];
+            }
+        })
+    }
+
+
+    return items;
+
+}
+
+function parseShopping(response) {
+
+}
+
+function parseMusic(response) {
+
+}
+
+
+function parseMovies(response) {
+
+}
+
+
+function parseLive(response) {
+
+}
+
+function parseGaming(response) {
+
+}
+
+
+function parseNews(response) {
+
+}
+
+
+function parseSports(response) {
+
+}
+
+function parseLearning(response) {
+
+}
+
+
+function parseFashion(response) {
+
 }

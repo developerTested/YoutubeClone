@@ -2,7 +2,13 @@ import express from 'express';
 import ViteExpress from "vite-express";
 import cors from 'cors';
 
-import { GetHomeFeed, GetData, GetChannelById, GetPlaylistData, GetShortVideo, GetVideoDetails, GetSuggestData } from "./parser.js";
+import {
+    GetData,
+    GetChannelById,
+    GetVideoDetails,
+    GetSuggestData,
+    getTrending
+} from "./parser.js";
 
 const port = process.env.PORT || 3000;
 
@@ -74,6 +80,23 @@ app.get('/api/channel/:id', async function (req, res) {
 
 });
 
+/**
+ * Menus
+ */
+app.get('/api/trending', async function (req, res) {
+
+    const name = req.params.name;
+
+    const contents = await getTrending();
+
+    res.status(200).json(contents);
+});
+
+/*
+app.listen(port, 'localhost', () => {
+    console.log('Express server listening on port %d in %s mode', port, app.settings.env);
+});
+*/
 ViteExpress.listen(app, port, () => {
     console.log('Express server listening on port %d in %s mode', port, app.settings.env);
 });
