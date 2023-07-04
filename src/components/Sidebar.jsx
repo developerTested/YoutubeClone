@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, Link, useLocation, matchRoutes, useMatch } from "react-router-dom";
+import { useNavigate, Link, useLocation, useMatch } from "react-router-dom";
 import { useApp } from "../contexts/contextApi";
 import { MdAddCircle, MdEmojiEvents, MdExplore, MdFeedback, MdHelp, MdHistory, MdHome, MdLightbulb, MdLocalMovies, MdMusicNote, MdReport, MdSettings, MdSubscriptions, MdVideoLibrary, MdWhatshot } from "react-icons/md";
 import { IoLogoGameControllerB } from "react-icons/io";
 import { ImNewspaper } from "react-icons/im";
 import { GiEclipse } from "react-icons/gi";
 import { BsBroadcast } from "react-icons/bs";
+import useActiveMenu from "../utilities/useActiveMenu";
+import useDrawer from "../utilities/useDrawer";
+
 import Logo from "./Logo";
 
 const menuItems = [
@@ -142,13 +145,13 @@ const menuItems = [
 
 export default function SideBar(props) {
 
-    const [active, setActive] = useState('/');
+    const [active, setActive] = useActiveMenu();
     const [show, setShow] = useState(true);
     const { mobileMenu, setMobileMenu, miniMenu, loading, setLoading } = useApp();
 
     const location = useLocation();
 
-    const watchPage = useMatch("/watch/:id");
+    const watchPage = useDrawer("/watch/:id");
 
     const ref = useRef(null);
 
@@ -175,7 +178,6 @@ export default function SideBar(props) {
         event.preventDefault();
 
         setLoading(true);
-        setActive(url);
 
         navigate(url);
 

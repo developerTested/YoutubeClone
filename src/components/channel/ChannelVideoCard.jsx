@@ -40,7 +40,7 @@ export default function ChannelVideoCard({ video, loading = true, ...props }) {
                     </Link>
                     {video?.length && <VideoLength text={video?.length} />}
                 </div>
-                <div className="details flex flex-col gap-2">
+                <div className="details px-1 flex flex-col gap-2">
                     <Link to={`/watch/${video?.id}`} className='block text-sm font-semibold line-clamp-2'>
                         {video?.title}
                     </Link>

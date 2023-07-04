@@ -12,16 +12,18 @@ const config = {
 const YoutubeSearchApi = axios.create(config);
 
 export const GetYoutubeInitData = async (url) => {
-    var initdata = await {};
-    var apiToken = await null;
-    var context = await null;
+    let initData = {};
+    let playerData = null;
+    let apiToken = null;
+    let context = null;
 
     try {
         const page = await YoutubeSearchApi.get(encodeURI(url));
         const ytInitData = await page.data.split("var ytInitialData =");
+        const ytPlayerData = await page.data.split("var ytInitialPlayerResponse =");
         if (ytInitData && ytInitData.length > 1) {
             const data = await ytInitData[1].split("</script>")[0].slice(0, -1);
-
+            const playerResponse = ytPlayerData && ytPlayerData.length > 1 ? ytPlayerData[1].split("</script>")[0].slice(0, -1) : null;
             if (page.data.split("innertubeApiKey").length > 0) {
                 apiToken = await page.data
                     .split("innertubeApiKey")[1]
@@ -36,8 +38,13 @@ export const GetYoutubeInitData = async (url) => {
                 );
             }
 
-            initdata = await JSON.parse(data);
-            return await Promise.resolve({ initdata, apiToken, context });
+            initData = await JSON.parse(data);
+            
+            if(playerResponse) {
+                playerData = await JSON.parse(playerResponse);
+            }
+            
+            return await Promise.resolve({ initData, playerData, apiToken, context });
         } else {
             console.error("cannot_get_init_data");
             return await Promise.reject("cannot_get_init_data");
@@ -100,7 +107,7 @@ export const GetData = async (
 
         const page = await GetYoutubeInitData(endpoint);
 
-        const sectionListRenderer = await page.initdata.contents
+        const sectionListRenderer = await page.initData.contents
             .twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer;
 
         let contToken = await {};
@@ -239,7 +246,8 @@ export const GetSuggestData = async (limit = 0) => {
     const endpoint = await `${youtubeEndpoint}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
-        const sectionListRenderer = await page.initdata.contents
+
+        const sectionListRenderer = await page.initData.contents
             .twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content
             .richGridRenderer.contents;
         let items = await [];
@@ -266,9 +274,9 @@ export const GetChannelById = async (channelId) => {
     const endpoint = await `${youtubeEndpoint}/@${channelId}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
-        const tabs = page.initdata.contents.twoColumnBrowseResultsRenderer.tabs;
-        const metadata = page.initdata.metadata.channelMetadataRenderer;
-        const channelHeader = page.initdata.header.c4TabbedHeaderRenderer;
+        const tabs = page.initData.contents.twoColumnBrowseResultsRenderer.tabs;
+        const metadata = page.initData.metadata.channelMetadataRenderer;
+        const channelHeader = page.initData.header.c4TabbedHeaderRenderer;
 
         let verified = false;
         if (
@@ -398,7 +406,8 @@ export const GetVideoDetails = async (videoId) => {
     const endpoint = await `${youtubeEndpoint}/watch?v=${videoId}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
-        const result = await page.initdata.contents.twoColumnWatchNextResults;
+
+        const result = await page.initData.contents.twoColumnWatchNextResults;
 
         const videoInfo = await result.results.results.contents[0]
             .videoPrimaryInfoRenderer;
@@ -428,14 +437,17 @@ export const GetVideoDetails = async (videoId) => {
             avatar: channelInfo.owner.videoOwnerRenderer.thumbnail.thumbnails,
         }
 
+        const player = getVideoData(page.playerData);
+
         const res = {
             id: videoId,
             title: videoInfo.title.runs[0].text,
             views: viewCount ?? 0,
             likes: likeCount,
             publishedAt: isLive ? videoInfo?.dateText?.simpleText : videoInfo?.relativeDateText?.simpleText,
-            description: channelInfo.attributedDescription.content,
+            description: player.shortDescription ?? channelInfo.attributedDescription.content,
             channel,
+            player,
             suggestion: suggestionList,
             isLive,
         }
@@ -563,7 +575,11 @@ export const compactVideoRenderer = (json) => {
 export async function getTrending() {
     const page = await GetYoutubeInitData(apiList['trending']);
 
-    const results = await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
+
+    //    return page.initData;
+
+    const contentHeader = await page.initData?.header?.c4TabbedHeaderRenderer;
+    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
     const items = results.sectionListRenderer.contents
         .filter((x) => x.itemSectionRenderer)
         .map((z) => z.itemSectionRenderer.contents).flat();
@@ -572,7 +588,7 @@ export async function getTrending() {
     const otherItems = [];
     const shortsList = [];
 
-    items.map((x) => {
+    items.length && items.map((x) => {
 
         if (x.shelfRenderer) {
             itemList = parseTrending(x.shelfRenderer.content);
@@ -591,6 +607,8 @@ export async function getTrending() {
     })
 
     return {
+        title: contentHeader?.title,
+        avatar: contentHeader?.avatar?.thumbnails[0],
         items: itemList,
         shorts: shortsList,
         otherItems,
@@ -601,7 +619,7 @@ export async function getFeed(name) {
     const youtubeEndpoint = name ? apiList[name] : youtubeEndpoint;
     const page = await GetYoutubeInitData(youtubeEndpoint);
 
-    const results = await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
+    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
     const items = results.sectionListRenderer.contents
         .filter((x) => x.itemSectionRenderer)
         .map((z) => z.itemSectionRenderer.contents).flat();
@@ -713,7 +731,7 @@ export async function getFeed(name) {
 export const GetHomeFeed = async () => {
     const page = await GetYoutubeInitData(youtubeEndpoint);
 
-    const results = await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer.contents
+    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer.contents
         .filter((x) => x.richSectionRenderer)
         .map((z) => z.richSectionRenderer.content)
         .filter((y) => y.richShelfRenderer)
@@ -741,7 +759,7 @@ export const GetHomeFeed = async () => {
 export const GetShortVideo = async () => {
     const page = await GetYoutubeInitData(youtubeEndpoint);
     const shortResult =
-        await page.initdata.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer.contents
+        await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer.contents
             .filter((x) => {
                 return x.richSectionRenderer;
             })
@@ -762,8 +780,44 @@ export const GetShortVideo = async () => {
 };
 
 
-export function getPlayerFromId(videoId) {
+function getVideoData(response) {
 
+    if (!response) {
+        return {};
+    }
+
+    try {
+
+        const microFormat = response.microformat.playerMicroformatRenderer;
+        const videoDetails = response.videoDetails;
+        const formats = response.streamingData.formats;
+
+        const player = {
+            id: videoDetails.videoId,
+            title: videoDetails.title,
+            thumbnails: videoDetails.thumbnail.thumbnails,
+            shortDescription: videoDetails.shortDescription,
+            length: videoDetails.lengthSeconds,
+            keywords: videoDetails.keywords,
+            category: microFormat.category,
+            publishDate: microFormat.publishDate,
+            embed: microFormat.embed,
+            media: []
+        };
+
+        formats.map((x) => player.media.push({
+            url: x.url,
+            type: x.mimeType,
+            label: x.qualityLabel,
+            width: x.width,
+            height: x.height,
+        }))
+
+        return player;
+
+    } catch (error) {
+        return {};
+    }
 }
 
 

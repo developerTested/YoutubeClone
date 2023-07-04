@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from "react"
 import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import VideoCard from "../VideoCard";
 import ChannelVideoCard from "../channel/ChannelVideoCard";
+import ShortVideoCard from "../ShortVideoCard";
 
 export default function Carousel({
     id,
     slides,
     card = 'video',
+    loading = false,
 }) {
     const [curr, setCurr] = useState(1);
     const ref = useRef(id);
@@ -15,9 +17,6 @@ export default function Carousel({
         const offset = perPage * (page - 1);
         const totalPages = Math.ceil(items.length / perPage);
         const paginatedItems = items.slice(offset, perPage * page);
-
-        console.log(items, page, perPage);
-        console.log(paginatedItems, offset);
 
         return {
             previousPage: page - 1 ? page - 1 : null,
@@ -36,7 +35,7 @@ export default function Carousel({
     return (
         <div className="relative" ref={ref}>
             <div className="grid grid-cols-5 gap-2 transition-all duration-500 px-4">
-                {items.length ? items.map((x, i) => card === 'channel' ? <ChannelVideoCard key={i} video={x} loading={false} /> : <VideoCard key={i} video={x} loading={false} />) : ''}
+                {items.length ? items.map((x, i) => card === 'channel' ? <ChannelVideoCard key={i} video={x} loading={loading} /> :card === 'short' ? <ShortVideoCard key={i} video={x} loading={loading} /> : <VideoCard key={i} video={x} loading={loading} />) : ''}
             </div>
 
             <button
