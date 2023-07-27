@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import VideoLength from './VideoLength';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { BsBroadcast } from 'react-icons/bs';
 
 export default function SuggestionCard({ video, loading = true }) {
 
@@ -30,37 +31,46 @@ export default function SuggestionCard({ video, loading = true }) {
     }
 
     return (
-        <div className="flex gap-2 mb-2">
-            <div className="relative h-24 lg:h-20 xl:h-24 w-40 min-w-[168px] lg:w-32 lg:min-w-[128px] xl:w-40 xl:min-w-[168px] rounded-xl bg-slate-800 overflow-hidden">
+        <div className="flex gap-2 mb-1">
+            <div className="relative mt-1 shrink-0 h-24 w-44 rounded-xl bg-slate-800 overflow-hidden">
                 <Link to={`/watch/${video?.id}`} className="rounded-lg max-w-full h-full ">
                     <LazyLoadImage
-                        wrapperClassName="w-full h-full block"
+                        wrapperClassName="w-full h-full block bg-black/10"
                         className='block w-full h-full'
-                        placeholderSrc='/img/1.jpg'
                         src={video?.thumbnails[0]?.url}
                         alt={video?.title}
                     />
                 </Link>
-
-                <VideoLength text={video?.length} />
+                {video?.length && <VideoLength text={video?.length} />}
             </div>
-            <div className="flex flex-col overflow-hidden">
-                <Link to={`/watch/${video?.id}`} className="text-sm lg:text-xs xl:text-sm font-bold text-ellipsis line-clamp-2">
+            <div className="flex flex-col gap-1 overflow-hidden">
+                <Link to={`/watch/${video?.id}`} className="text-sm lg:text-xs xl:text-sm font-semibold text-ellipsis line-clamp-2">
                     {video?.title}
                 </Link>
 
-                <Link to={video?.channel?.url} className="text-xs font-semibold mt-2 dark:text-white/70 flex items-center gap-2">
+                <Link to={video?.channel?.url} className="text-xs font-medium text-gray-700 dark:text-white/70 flex items-center gap-2">
                     <div className="truncate">{video?.channel?.title}</div>
                     {video?.channel?.verified && (
                         <img src='/verified.svg' className='w-4 h-4 block' />
                     )}
                 </Link>
-                <div className='flex items-center gap-2 mt-1 text-xs font-semibold truncate overflow-hidden text-gray-700 dark:text-slate-400'>
+
+                <div className='flex items-center text-xs font-semibold truncate overflow-hidden text-gray-700 dark:text-slate-400'>
                     <div className="views">{video?.views}</div>
                     <div className="mx-1">•</div>
                     <div className="uploaded truncate">
                         {video?.publishedAt}
                     </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    {video?.isLive ?
+                        <div className="flex items-center gap-2 rounded-sm text-center bg-red-600 text-xs text-white px-1.5 py-0">
+                            <BsBroadcast className="w-4 h-4" /> <div className="uppercase font-bold">Live</div>
+                        </div>
+                        : ''}
+                    {video?.badges?.length ? video?.badges?.map((x, i) => <div key={i} className="block rounded-md text-xs bg-slate-100 dark:bg-white/20 px-2 py-1">
+                        {x}
+                    </div>) : ''}
                 </div>
             </div>
         </div >

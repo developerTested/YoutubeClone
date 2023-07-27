@@ -149,8 +149,6 @@ export default function SideBar(props) {
     const [show, setShow] = useState(true);
     const { mobileMenu, setMobileMenu, miniMenu, loading, setLoading } = useApp();
 
-    const location = useLocation();
-
     const watchPage = useDrawer("/watch/:id");
 
     const ref = useRef(null);
@@ -177,7 +175,12 @@ export default function SideBar(props) {
 
         event.preventDefault();
 
+        console.log(watchPage);
+
         setLoading(true);
+        if(!watchPage){
+            setMobileMenu(false);
+        }
 
         navigate(url);
 

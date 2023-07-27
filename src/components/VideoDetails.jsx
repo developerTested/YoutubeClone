@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BsFillCheckCircleFill } from 'react-icons/bs';
 import { MdMoreHoriz, MdPlaylistAdd, MdShare, MdThumbDown, MdThumbUp } from 'react-icons/md';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,10 @@ import { Link } from 'react-router-dom';
 export default function VideoDetails({ video = null, loading = true }) {
 
     const [showMore, setShowMore] = useState(false);
+
+    useEffect(() => {
+        setShowMore(false);
+    }, [video])
 
     if (loading) {
         return (

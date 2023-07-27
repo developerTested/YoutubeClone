@@ -9,7 +9,11 @@ module.exports = {
     extend: {
       container: {
         center: true,
-      }
+      },
+      animation: {
+        'play-fade': 'play-fade .5s linear 1 normal forwards',
+        'pause-fade': 'pause-fade .5s linear 1 normal forwards',
+      },
     },
   },
   plugins: [

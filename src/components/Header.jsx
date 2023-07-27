@@ -6,17 +6,19 @@ import { useApp } from '../contexts/contextApi';
 import SearchForm from "./SearchForm";
 import Logo from './Logo';
 import Loader from './Loader';
-import { useMenuHandleClick } from '../utilities/useHandleClick';
 import SettingMenu from './settings/SettingMenu';
 import ClickAwayListener from 'react-click-away-listener';
 import { themeData } from './settings/ThemeSettings';
+import useDrawer from '../utilities/useDrawer';
 
-function Header(props) {
+import { useMenuHandleClick } from '../utilities/useHandleClick';
+
+export default function Header(props) {
 
   const { loading, mobileMenu, setMobileMenu, miniMenu, setMiniMenu, dark, setDark, theme, setTheme } = useApp();
   const [activeMenu, setActiveMenu] = useMenuHandleClick();
 
-  const watchPage = useMatch("/watch/:id");
+  const watchPage = useDrawer("/watch/:id");
 
   const menuToggle = () => {
     setMiniMenu(false);
@@ -29,7 +31,7 @@ function Header(props) {
   }
 
   const handleResize = () => {
-    if (window.innerWidth > 1024) {
+    if (window.innerWidth > 1450) {
       setMiniMenu(false);
     } else {
       setMiniMenu(true);
@@ -102,22 +104,9 @@ function Header(props) {
 
               </div>
             </ClickAwayListener>
-
-            <div className="cursor-pointer flex items-center justify-center h-10 w-10 rounded-full hover:bg-gray-200 dark:hover:bg-white/20">
-              <MdVideoCall className="w-6 h-6" />
-            </div>
-            <div className="cursor-pointer flex items-center justify-center h-10 w-10 rounded-full hover:bg-gray-200 dark:hover:bg-white/20">
-              <MdNotifications className="w-6 h-6" />
-            </div>
           </>
-
-        </div>
-        <div className="flex h-8 w-8 overflow-hidden rounded-full md:ml-4">
-          <img src="https://xsgames.co/randomusers/assets/avatars/female/67.jpg" />
         </div>
       </div>
     </div>
   );
 }
-
-export default Header;

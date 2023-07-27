@@ -56,6 +56,27 @@ code {
     animation: loading 3s linear 2s infinite;
 }
 
+.player-progress {
+    position: relative;
+    width: 100%;
+}
+
+.player-progress::before,
+.player-progress::after {
+    position: absolute;
+    content: '';
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    display: block;
+}
+
+.player-progress::after {
+    background-color: red;
+    right: calc(100% - var(--progress-position));
+}
+
 @keyframes loading {
     from {
         left: 50%;
@@ -72,5 +93,31 @@ code {
     to {
         left: 0;
         width: 100%;
+    }
+}
+
+@keyframes play-fade {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(2);
+        transform: scale(2);
+        visibility: hidden;
+    }
+}
+
+@keyframes pause-fade {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+        -webkit-transform: scale(2);
+        transform: scale(2);
+        visibility: hidden;
     }
 }

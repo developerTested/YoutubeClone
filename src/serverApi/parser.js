@@ -39,11 +39,11 @@ export const GetYoutubeInitData = async (url) => {
             }
 
             initData = await JSON.parse(data);
-            
-            if(playerResponse) {
+
+            if (playerResponse) {
                 playerData = await JSON.parse(playerResponse);
             }
-            
+
             return await Promise.resolve({ initData, playerData, apiToken, context });
         } else {
             console.error("cannot_get_init_data");
@@ -247,6 +247,11 @@ export const GetSuggestData = async (limit = 0) => {
     try {
         const page = await GetYoutubeInitData(endpoint);
 
+
+        if (!page.initData.contents?.twoColumnBrowseResultsRenderer) {
+            return {};
+        }
+
         const sectionListRenderer = await page.initData.contents
             .twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content
             .richGridRenderer.contents;
@@ -388,12 +393,14 @@ export const GetChannelById = async (channelId) => {
 
         }
 
+        const exclude = ['featured', 'channels'];
+
         const channelJson = {
             ...channel,
             description: metadata.description,
             subscriber: channelHeader.subscriberCountText.simpleText,
             videos: channelHeader.videosCountText?.runs?.map((x) => x.text).join(''),
-            results: results.filter((x) => !x?.title?.includes('Channels')),
+            results: results.filter((x) => !exclude.includes(x?.title?.toLowerCase())),
         }
 
         return await Promise.resolve(channelJson);
@@ -408,14 +415,15 @@ export const GetVideoDetails = async (videoId) => {
         const page = await GetYoutubeInitData(endpoint);
 
         const result = await page.initData.contents.twoColumnWatchNextResults;
+        const playerData = await page.playerData;
 
         const videoInfo = await result.results.results.contents[0]
             .videoPrimaryInfoRenderer;
         const channelInfo = await result.results.results.contents[1]
             .videoSecondaryInfoRenderer;
 
-        var isLive = false;
-        if (videoInfo.viewCount.videoViewCountRenderer.hasOwnProperty("isLive")) {
+        let isLive = false;
+        if (videoInfo?.viewCount?.videoViewCountRenderer?.hasOwnProperty("isLive")) {
             isLive = true;
         }
 
@@ -437,7 +445,7 @@ export const GetVideoDetails = async (videoId) => {
             avatar: channelInfo.owner.videoOwnerRenderer.thumbnail.thumbnails,
         }
 
-        const player = getVideoData(page.playerData);
+        const player = getVideoData(playerData);
 
         const res = {
             id: videoId,
@@ -468,7 +476,7 @@ export const VideoRender = (json) => {
             } else if (json.playlistVideoRenderer) {
                 videoRenderer = json.playlistVideoRenderer;
             }
-            var isLive = false;
+            let isLive = false;
             if (
                 videoRenderer.badges &&
                 videoRenderer.badges.length > 0 &&
@@ -533,6 +541,14 @@ export const compactVideoRenderer = (json) => {
         isLive = true;
     }
 
+    let badges = [];
+    if (
+        compactVideoRendererJson.badges &&
+        compactVideoRendererJson.badges.length > 0) {
+        badges = compactVideoRendererJson.badges.map((x) => x.metadataBadgeRenderer.label);
+        badges = badges.filter((x) => x.toLowerCase() !== 'live');
+    }
+
     let verified = false;
     if (
         compactVideoRendererJson.ownerBadges &&
@@ -544,6 +560,7 @@ export const compactVideoRenderer = (json) => {
         verified = true;
     }
 
+    const viewsCount = isLive ? compactVideoRendererJson.shortViewCountText?.runs?.map((x) => x.text).join('') : compactVideoRendererJson.shortViewCountText?.simpleText;
 
     const channelUrl = compactVideoRendererJson.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url;
     const channelAvatar = compactVideoRendererJson.channelThumbnail.thumbnails[0];
@@ -563,8 +580,9 @@ export const compactVideoRenderer = (json) => {
         title: compactVideoRendererJson.title?.simpleText,
         channel,
         length: compactVideoRendererJson?.lengthText?.simpleText,
-        views: compactVideoRendererJson.shortViewCountText.simpleText,
+        views: viewsCount,
         publishedAt: compactVideoRendererJson?.publishedTimeText?.simpleText,
+        badges,
         isLive,
     };
 
@@ -575,44 +593,50 @@ export const compactVideoRenderer = (json) => {
 export async function getTrending() {
     const page = await GetYoutubeInitData(apiList['trending']);
 
+    try {
 
-    //    return page.initData;
+        //    return page.initData;
 
-    const contentHeader = await page.initData?.header?.c4TabbedHeaderRenderer;
-    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
-    const items = results.sectionListRenderer.contents
-        .filter((x) => x.itemSectionRenderer)
-        .map((z) => z.itemSectionRenderer.contents).flat();
+        const contentHeader = await page.initData?.header?.c4TabbedHeaderRenderer;
+        const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
+        const items = results.sectionListRenderer.contents
+            .filter((x) => x.itemSectionRenderer)
+            .map((z) => z.itemSectionRenderer.contents).flat();
 
-    let itemList = [];
-    const otherItems = [];
-    const shortsList = [];
+        let itemList = [];
+        const otherItems = [];
+        const shortsList = [];
 
-    items.length && items.map((x) => {
+        items.length && items.map((x) => {
 
-        if (x.shelfRenderer) {
-            itemList = parseTrending(x.shelfRenderer.content);
-        } else if (x.reelShelfRenderer) {
-            const shortsResult = x.reelShelfRenderer.items;
-            shortsResult.map(({ reelItemRenderer: json }) => shortsList.push({
-                id: json.videoId,
-                type: "reel",
-                thumbnail: json.thumbnail.thumbnails[0],
-                title: json.headline.simpleText,
-            }));
-        } else {
-            return [];
-        }
+            if (x.shelfRenderer) {
+                itemList = parseTrending(x.shelfRenderer.content);
+            } else if (x.reelShelfRenderer) {
+                const shortsResult = x.reelShelfRenderer.items;
+                shortsResult.map(({ reelItemRenderer: json }) => shortsList.push({
+                    id: json.videoId,
+                    type: "reel",
+                    thumbnail: json.thumbnail.thumbnails[0],
+                    title: json.headline.simpleText,
+                }));
+            } else {
+                return [];
+            }
 
-    })
+        })
 
-    return {
-        title: contentHeader?.title,
-        avatar: contentHeader?.avatar?.thumbnails[0],
-        items: itemList,
-        shorts: shortsList,
-        otherItems,
-    };
+        return {
+            title: contentHeader?.title,
+            avatar: contentHeader?.avatar?.thumbnails[0],
+            items: itemList,
+            shorts: shortsList,
+            otherItems,
+        };
+
+
+    } catch (error) {
+        return await Promise.reject(error);
+    }
 }
 
 export async function getFeed(name) {
@@ -790,7 +814,7 @@ function getVideoData(response) {
 
         const microFormat = response.microformat.playerMicroformatRenderer;
         const videoDetails = response.videoDetails;
-        const formats = response.streamingData.formats;
+        const formats = videoDetails.isLive ? response.streamingData.adaptiveFormats : response.streamingData.formats;
 
         const player = {
             id: videoDetails.videoId,
@@ -807,6 +831,7 @@ function getVideoData(response) {
 
         formats.map((x) => player.media.push({
             url: x.url,
+            hls: videoDetails.isLive ? response.streamingData.hlsManifestUrl : null,
             type: x.mimeType,
             label: x.qualityLabel,
             width: x.width,
@@ -836,84 +861,89 @@ function parseVideoRender(response) {
         return response;
     }
 
-    var isLive = false;
-    if (
-        response.badges &&
-        response.badges.length > 0 &&
-        response.badges[0].metadataBadgeRenderer &&
-        response.badges[0].metadataBadgeRenderer.style ===
-        "BADGE_STYLE_TYPE_LIVE_NOW"
-    ) {
-        isLive = true;
+    try {
+
+        let isLive = false;
+        if (
+            response.badges &&
+            response.badges.length > 0 &&
+            response.badges[0].metadataBadgeRenderer &&
+            response.badges[0].metadataBadgeRenderer.style ===
+            "BADGE_STYLE_TYPE_LIVE_NOW"
+        ) {
+            isLive = true;
+        }
+        if (response.thumbnailOverlays) {
+            response.thumbnailOverlays.forEach((item) => {
+                if (
+                    item.thumbnailOverlayTimeStatusRenderer &&
+                    item.thumbnailOverlayTimeStatusRenderer.style &&
+                    item.thumbnailOverlayTimeStatusRenderer.style === "LIVE"
+                ) {
+                    isLive = true;
+                }
+            });
+        }
+
+        let badges = [];
+        if (
+            response.badges &&
+            response.badges.length > 0) {
+            badges = response.badges.map((x) => x.metadataBadgeRenderer.label);
+            badges = badges.filter((x) => x.toLowerCase() !== 'live');
+        }
+
+        let verified = false;
+        if (
+            response.ownerBadges &&
+            response.ownerBadges.length > 0 &&
+            response.ownerBadges[0].metadataBadgeRenderer &&
+            response.ownerBadges[0].metadataBadgeRenderer.style ===
+            "BADGE_STYLE_TYPE_VERIFIED"
+        ) {
+            verified = true;
+        }
+
+        const channelUrl = response.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url;
+        const channelAvatar = response.channelThumbnailSupportedRenderers.channelThumbnailWithLinkRenderer.thumbnail.thumbnails[0];
+
+        const channel = {
+            id: channelUrl ? channelUrl?.replace('/@', '') : '',
+            title: response.ownerText.runs[0].text,
+            url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
+            avatar: channelAvatar,
+            verified,
+        };
+
+        const hasDescription = response.hasOwnProperty('detailedMetadataSnippets');
+        const hasDescriptionSnippet = response.hasOwnProperty('descriptionSnippet');
+
+        const descriptionSnippet = hasDescription ? response?.detailedMetadataSnippets[0].snippetText?.runs?.map((x) => x.text).join('') : false;
+
+        const descriptionTwoSnippet = hasDescriptionSnippet ? response.descriptionSnippet?.runs?.map((x) => x.text).join('') : false;
+
+        const viewsCount = isLive ? response.shortViewCountText?.runs?.map((x) => x.text).join('') : response.shortViewCountText?.simpleText;
+
+        const description = descriptionSnippet || descriptionTwoSnippet || '';
+
+        const result = {
+            id: response.videoId,
+            type: isLive ? "Live" : "video",
+            thumbnails: response?.thumbnail?.thumbnails,
+            title: response.title.runs[0].text,
+            description,
+            channel,
+            length: response.lengthText?.simpleText,
+            views: viewsCount,
+            publishedAt: isLive ? response?.dateText?.simpleText : response?.publishedTimeText?.simpleText,
+            isLive,
+            badges,
+        };
+
+        return result;
+    } catch (error) {
+        return error;
     }
-    if (response.thumbnailOverlays) {
-        response.thumbnailOverlays.forEach((item) => {
-            if (
-                item.thumbnailOverlayTimeStatusRenderer &&
-                item.thumbnailOverlayTimeStatusRenderer.style &&
-                item.thumbnailOverlayTimeStatusRenderer.style === "LIVE"
-            ) {
-                isLive = true;
-            }
-        });
-    }
-
-    let badges = [];
-    if (
-        response.badges &&
-        response.badges.length > 0) {
-        badges = response.badges.map((x) => x.metadataBadgeRenderer.label);
-    }
-
-    let verified = false;
-    if (
-        response.ownerBadges &&
-        response.ownerBadges.length > 0 &&
-        response.ownerBadges[0].metadataBadgeRenderer &&
-        response.ownerBadges[0].metadataBadgeRenderer.style ===
-        "BADGE_STYLE_TYPE_VERIFIED"
-    ) {
-        verified = true;
-    }
-
-    const channelUrl = response.ownerText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url;
-    const channelAvatar = response.channelThumbnailSupportedRenderers.channelThumbnailWithLinkRenderer.thumbnail.thumbnails[0];
-
-    const channel = {
-        id: channelUrl ? channelUrl?.replace('/@', '') : '',
-        title: response.ownerText.runs[0].text,
-        url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
-        avatar: channelAvatar,
-        verified,
-    };
-
-    const hasDescription = response.hasOwnProperty('detailedMetadataSnippets');
-    const hasDescriptionSnippet = response.hasOwnProperty('descriptionSnippet');
-
-    const descriptionSnippet = hasDescription ? response?.detailedMetadataSnippets[0].snippetText?.runs?.map((x) => x.text).join('') : false;
-
-    const descriptionTwoSnippet = hasDescriptionSnippet ? response.descriptionSnippet?.runs?.map((x) => x.text).join('') : false;
-
-    const viewsCount = isLive ? response.shortViewCountText?.runs?.map((x) => x.text).join('') : response.shortViewCountText?.simpleText;
-
-    const description = descriptionSnippet || descriptionTwoSnippet || '';
-
-    const result = {
-        id: response.videoId,
-        type: isLive ? "Live" : "video",
-        thumbnails: response?.thumbnail?.thumbnails,
-        title: response.title.runs[0].text,
-        description,
-        channel,
-        length: response.lengthText?.simpleText,
-        views: viewsCount,
-        publishedAt: isLive ? response?.dateText?.simpleText : response?.publishedTimeText?.simpleText,
-        isLive,
-        badges,
-    };
-
-    return result;
-
 }
 
 /**
@@ -947,19 +977,24 @@ function parseShortVideo(results) {
  */
 function parseChannelRender(response) {
 
-    const channelUrl = response.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url;
+    try {
+        const channelUrl = response.shortBylineText.runs[0].navigationEndpoint.commandMetadata.webCommandMetadata.url;
 
-    const channel = {
-        id: channelUrl ? channelUrl?.replace('/', '') : '',
-        type: "channel",
-        title: response.title.simpleText,
-        url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
-        avatar: response.thumbnail.thumbnails,
-        description: response.descriptionSnippet.runs.map((x) => x.text).join(''),
-        subscriber: response.videoCountText.simpleText,
-    };
+        const channel = {
+            id: channelUrl ? channelUrl?.replace('/', '') : '',
+            type: "channel",
+            title: response.title.simpleText,
+            url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
+            avatar: response.thumbnail.thumbnails,
+            description: response.descriptionSnippet.runs.map((x) => x.text).join(''),
+            subscriber: response.videoCountText.simpleText,
+        };
 
-    return channel;
+        return channel;
+
+    } catch (error) {
+        return error;
+    }
 }
 
 function parseTrending(response = []) {

@@ -72,7 +72,7 @@ export default function TrendingPage() {
       </div>
       <div className="flex flex-col">
         <div className="px-4 py-2 text-2xl">Trending Videos</div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
 
           {loading ? Array.from(new Array(30)).map((_, i) => <VideoCard key={i} loading={true} />) :
             videoList.length ? videoList.map((x, i) => <VideoCard key={i} video={x} loading={false} />) : ''}

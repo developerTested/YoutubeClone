@@ -53,7 +53,7 @@ export default function WatchPage(props) {
                 </div>
                 <VideoDetails video={video} loading={loading} />
             </div>
-            <div className="shrink-0 flex flex-col lg:w-[350px]">
+            <div className="shrink-0 flex flex-col lg:w-96">
                 {loading ? Array.from(new Array(10)).map((_, i) => <SuggestionCard key={i} />) : video?.suggestion && video?.suggestion.length ? video?.suggestion.filter(x => x.type === 'video').map((x, i) => <SuggestionCard key={i} video={x} loading={false} />) : <SuggestionCard loading={true} />}
             </div>
         </div>
