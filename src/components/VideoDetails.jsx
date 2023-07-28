@@ -114,24 +114,23 @@ export default function VideoDetails({ video = null, loading = true }) {
                     </>}
                 </div>
 
-                <div className="grid transition-all">
+                {video?.description ?
+                    <div className="grid transition-all">
+                        {showMore ? video?.description && video?.description.length ? video?.description.split('\n').map((x, i) => {
+                            return (
+                                <React.Fragment key={i}>
+                                    {x}
+                                    <br />
+                                </React.Fragment>
+                            )
+                        }) : '' : <div className="text-ellipsis  ">{video?.description.length && video?.description.substring(0, 350) + "..."}</div>
+                        }
 
+                        <button onClick={() => setShowMore(!showMore)}>
+                            {showMore ? "Show Less" : "Show More"}
+                        </button>
 
-                    {showMore ? video?.description && video?.description.length ? video?.description.split('\n').map((x, i) => {
-                        return (
-                            <React.Fragment key={i}>
-                                {x}
-                                <br />
-                            </React.Fragment>
-                        )
-                    }) : '' : <div className="text-ellipsis  ">{video?.description.length && video?.description.substring(0, 350) + "..."}</div>
-                    }
-
-                    <button onClick={() => setShowMore(!showMore)}>
-                        {showMore ? "Show Less" : "Show More"}
-                    </button>
-
-                </div>
+                    </div> : ''}
             </div>
         </div>
     );

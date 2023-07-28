@@ -417,10 +417,24 @@ export const GetVideoDetails = async (videoId) => {
         const result = await page.initData.contents.twoColumnWatchNextResults;
         const playerData = await page.playerData;
 
-        const videoInfo = await result.results.results.contents[0]
-            .videoPrimaryInfoRenderer;
-        const channelInfo = await result.results.results.contents[1]
-            .videoSecondaryInfoRenderer;
+        let videoInfo, channelInfo = null, contToken;
+
+        await result.results.results.contents.forEach((content) => {
+            if (content.itemSectionRenderer?.contents[0].continuationItemRenderer) {
+                contToken =
+                    content.itemSectionRenderer?.contents[0].continuationItemRenderer.continuationEndpoint
+                        .continuationCommand.token;
+            } else if (content.videoPrimaryInfoRenderer) {
+                videoInfo = content.videoPrimaryInfoRenderer;
+            } else if (content.videoSecondaryInfoRenderer) {
+                channelInfo = content.videoSecondaryInfoRenderer;
+            }
+        });
+        const apiToken = await page.apiToken;
+        const context = await page.context;
+        const nextPageContext = await { context: context, continuation: contToken };
+
+        const nextPage = { nextPageToken: apiToken, nextPageContext: nextPageContext }
 
         let isLive = false;
         if (videoInfo?.viewCount?.videoViewCountRenderer?.hasOwnProperty("isLive")) {
@@ -458,10 +472,91 @@ export const GetVideoDetails = async (videoId) => {
             player,
             suggestion: suggestionList,
             isLive,
+            comments: await getComments(nextPage)
         }
 
         return await Promise.resolve(res);
     } catch (ex) {
+        return await Promise.reject(ex);
+    }
+};
+
+export const getComments = async (nextPage) => {
+    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.apiToken}`;
+
+    try {
+        const page = await axios.post(
+            encodeURI(endpoint),
+            nextPage.nextPageContext
+        );
+
+        const response = page.data.onResponseReceivedEndpoints;
+
+        const commentHeader = response[0]?.reloadContinuationItemsCommand?.continuationItems[0]?.commentsHeaderRenderer;
+
+        const commentCounts = commentHeader.countText?.runs?.map(x => x.text).join('');
+
+        const itemList = page.data?.onResponseReceivedEndpoints[1]?.reloadContinuationItemsCommand;
+        let items = [];
+
+        if (!itemList.continuationItems) {
+            return {};
+        }
+
+        itemList.continuationItems.forEach((conitem) => {
+
+            const commentThreadRenderer = conitem.commentThreadRenderer;
+
+            if (commentThreadRenderer) {
+
+                const comment = commentThreadRenderer.comment.commentRenderer;
+
+                let artist = false;
+                if (comment.authorCommentBadge
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType === 'OFFICIAL_ARTIST_BADGE') {
+                    artist = true;
+                }
+
+                let verified = false;
+                if (comment.authorCommentBadge
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
+                    && ["CHECK", "CHECK_CIRCLE_THICK"]
+                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)) {
+                    verified = true;
+                }
+
+                const channelUrl = comment.authorText.simpleText;
+
+                const channel = {
+                    id: channelUrl ? channelUrl?.replace('/@', '') : '',
+                    title: channelUrl,
+                    url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
+                    avatar: comment.authorThumbnail.thumbnails,
+                    verified,
+                    artist,
+                    badges: comment,
+                };
+
+                items.push({
+                    channel,
+                    isOwner: comment.authorIsChannelOwner,
+                    content: comment.contentText?.runs?.map(x => x.text).join(''),
+                    publishedAt: comment.publishedTimeText?.runs?.map(x => x.text).join(''),
+                    likes: comment.voteCount?.simpleText,
+                    replyCount: comment.replyCount,
+                });
+
+            } else if (conitem.continuationItemRenderer) {
+                nextPage.nextPageContext.continuation =
+                    conitem.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+            }
+        });
+        return await Promise.resolve({ text: commentCounts, items, nextPage: nextPage });
+    } catch (ex) {
+        await console.error(ex);
         return await Promise.reject(ex);
     }
 };
@@ -849,6 +944,12 @@ function getVideoData(response) {
 /**
  * Helper function for parser
  */
+
+function parseComments(response) {
+    if (!response) {
+        return response;
+    }
+}
 
 /**
  * parse Video Container

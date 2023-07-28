@@ -1,5 +1,5 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useApp } from '../contexts/contextApi';
 import useDrawer from '../utilities/useDrawer';
 import Header from './Header';
@@ -7,7 +7,17 @@ import SideBar from './Sidebar';
 
 export default function RootLayout() {
 
-    const { mobileMenu, miniMenu, setMiniMenu, theme } = useApp();
+    const { pathname } = useLocation();
+
+    const { mobileMenu, setMobileMenu, miniMenu, setMiniMenu, theme } = useApp();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+
+        setMobileMenu(false);
+        
+    }, [pathname]);
+
 
     const watchPage = useDrawer("/watch/:id");
 
@@ -24,6 +34,7 @@ export default function RootLayout() {
                     <Outlet />
                 </div>
             </div>
+
         </div>
     );
 }

@@ -40,7 +40,7 @@ export default function VideoCard({ video, loading = true }) {
                         <LazyLoadImage
                             wrapperClassName="w-full h-full block bg-black/10"
                             className='block w-full h-full'
-                            src={video?.thumbnails[0]?.url}
+                            src={video?.thumbnails[video?.thumbnails?.length - 1]?.url}
                             alt={video?.title}
                         />
                     </Link>
@@ -59,8 +59,8 @@ export default function VideoCard({ video, loading = true }) {
 
                         {video?.channel &&
                             <Link to={video?.channel?.url} className='user text-xs text-gray-800 dark:text-white/70 flex items-center gap-2'>
-                                {video?.channel.title}
-                                {video?.channel.verified && (
+                                {video?.channel?.title}
+                                {video?.channel?.verified && (
                                     <img src='/verified.svg' className='w-4 h-4 block' />
                                 )}
                             </Link>

@@ -175,10 +175,11 @@ export default function SideBar(props) {
 
         event.preventDefault();
 
-        console.log(watchPage);
+        if (active !== url) {
+            setLoading(true);
+        }
 
-        setLoading(true);
-        if(!watchPage){
+        if (!watchPage) {
             setMobileMenu(false);
         }
 

@@ -25,8 +25,6 @@ export default function HomePage(props) {
             document.title = import.meta.env.VITE_APP_NAME;
         } catch (error) {
             setLoading(true);
-
-            console.log(error);
         }
     }
 
