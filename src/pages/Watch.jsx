@@ -56,7 +56,7 @@ export default function WatchPage(props) {
                 <div className="comment-container">
                     <h2 className='text-lg my-2 px-4 py-2'>{video?.comments?.text}</h2>
 
-                    <div className="flex flex-col divide-y dark:divide-white/20">
+                    <div className="flex flex-col gap-2 divide-y dark:divide-white/20">
                         {video?.comments?.items.length ? video?.comments?.items.map((x, i) => <CommentCard comment={x} key={i} />) : ''}
                     </div>
                 </div>
