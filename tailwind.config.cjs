@@ -9,6 +9,7 @@ module.exports = {
     extend: {
       container: {
         center: true,
+        padding: '1rem',
       },
       animation: {
         'play-fade': 'play-fade .5s linear 1 normal forwards',
