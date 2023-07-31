@@ -68,7 +68,7 @@ export default function VideoDetails({ video = null, loading = true }) {
                         </div>
                     </div>
                 </div>
-                <div className="video-stats hidden md:flex gap-2 items-center">
+                <div className="video-stats hidden lg:flex gap-2 items-center">
                     <div className="btn-group px-4 py-2 bg-slate-100 dark:bg-white/20 flex gap-4 justify-center items-center rounded-full">
                         <div className="like flex items-center gap-2 rounded-full text-center">
                             <div className="icon">
@@ -80,24 +80,6 @@ export default function VideoDetails({ video = null, loading = true }) {
                             <div className="icon">
                                 <MdThumbDown className='w-6 h-6' />
                             </div>
-                        </div>
-                    </div>
-
-                    <div className="share px-4 py-2 bg-slate-100 dark:bg-white/20 flex justify-center items-center gap-2 rounded-full">
-                        <div className="icon">
-                            <MdShare className='w-6 h-6' />
-                        </div>
-                        <div className="label">Share</div>
-                    </div>
-                    <div className="save px-4 py-2 bg-slate-100 dark:bg-white/20 flex justify-center items-center gap-2 rounded-full">
-                        <div className="icon">
-                            <MdPlaylistAdd className='w-6 h-6' />
-                        </div>
-                        <div className="label">Save</div>
-                    </div>
-                    <div className="more px-4 py-2 bg-slate-100 dark:bg-white/20 flex justify-center items-center gap-2 rounded-full">
-                        <div className="icon">
-                            <MdMoreHoriz className="w-6 h-6" />
                         </div>
                     </div>
                 </div>

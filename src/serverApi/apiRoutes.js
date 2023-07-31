@@ -9,6 +9,7 @@ const apiList = {
     sports: '/channel/UCEgdi0XIXXZ-qJOFPf4JSKw',
     learning: '/channel/UCtFRv9O2AHqOZjjynzrv-xg',
     fashion: '/channel/UCrpQ4p1Ql_hG8rKXIKM1MOQ,',
+    autoComplete: 'https://suggestqueries-clients6.youtube.com/complete/search?client=youtube&hl=en&gl=in&gs_rn=64&gs_ri=youtube&ds=yt&cp=3&gs_id=2s&xhr=t',
 };
 
 export default apiList;

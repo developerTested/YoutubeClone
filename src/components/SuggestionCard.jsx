@@ -32,7 +32,7 @@ export default function SuggestionCard({ video, loading = true }) {
 
     return (
         <div className="flex gap-2 mb-1">
-            <div className="relative mt-1 shrink-0 h-24 w-44 rounded-xl bg-slate-800 overflow-hidden">
+            <div className="relative mt-1 shrink-0 lg:w-44 lg:h-24 rounded-xl bg-slate-800 overflow-hidden">
                 <Link to={`/watch/${video?.id}`} className="rounded-lg max-w-full h-full ">
                     <LazyLoadImage
                         wrapperClassName="w-full h-full block bg-black/10"

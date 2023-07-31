@@ -5,7 +5,7 @@ import YoutubeApi from '../utilities/youtubeApi';
 
 export default function HomePage(props) {
 
-    const { loading, setLoading, mobileMenu } = useApp();
+    const { loading, setLoading, miniMenu } = useApp();
 
     const [shortList, setShortList] = useState([]);
     const [videoList, setVideoList] = useState([]);
@@ -40,7 +40,7 @@ export default function HomePage(props) {
 
     return (
         <div className='grid gap-4'>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 p-5">
+            <div className={`grid grid-cols-1 sm:grid-cols-2 ${miniMenu ? 'lg:grid-cols-4' : 'lg:grid-cols-3'} gap-4 p-5`}>
 
                 {loading ? Array.from(new Array(30)).map((_, i) => <VideoCard key={i} loading={true} />) :
                     videoList.length ? videoList.map((x, i) => <VideoCard key={i} video={x} mobileMenu loading={false} />) : ''}

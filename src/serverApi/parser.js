@@ -472,7 +472,7 @@ export const GetVideoDetails = async (videoId) => {
             player,
             suggestion: suggestionList,
             isLive,
-            comments: await getComments(nextPage)
+            comments: await getComments(nextPage) ?? []
         }
 
         return await Promise.resolve(res);
@@ -483,6 +483,7 @@ export const GetVideoDetails = async (videoId) => {
 
 export const getComments = async (nextPage) => {
     const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.apiToken}`;
+    const items = [];
 
     try {
         const page = await axios.post(
@@ -492,15 +493,16 @@ export const getComments = async (nextPage) => {
 
         const response = page.data.onResponseReceivedEndpoints;
 
+        if (!response) return [];
+
         const commentHeader = response[0]?.reloadContinuationItemsCommand?.continuationItems[0]?.commentsHeaderRenderer;
 
         const commentCounts = commentHeader.countText?.runs?.map(x => x.text).join('');
 
         const itemList = page.data?.onResponseReceivedEndpoints[1]?.reloadContinuationItemsCommand;
-        const items = [];
 
         if (!itemList.continuationItems) {
-            return {};
+            return [];
         }
 
         for (const conitem of itemList.continuationItems) {
@@ -577,7 +579,7 @@ export const getComments = async (nextPage) => {
         return await Promise.resolve({ text: commentCounts, items, nextPage: nextPage });
     } catch (ex) {
         await console.error(ex);
-        return await Promise.reject(ex);
+        return await Promise.reject([]);
     }
 };
 
@@ -654,6 +656,32 @@ async function getCommentReplies(nextPage) {
         return Promise.reject(error);
     }
 
+}
+
+/**
+ * 
+ * @param {*} json 
+ * @returns []
+ */
+export async function getAutoCompleteSearch(keyword) {
+    const searchUrl = `${apiList.autoComplete}&q=${keyword}`;
+
+    const list = []
+
+    try {
+
+        const page = await axios.get(searchUrl);
+
+        const response = page.data;
+
+        if (response) {
+            Object.values(response[1]).map((x) => list.push(x[0]));
+        }
+
+        return Promise.resolve(list);
+    } catch (error) {
+        return Promise.reject(error);
+    }
 }
 
 export const VideoRender = (json) => {

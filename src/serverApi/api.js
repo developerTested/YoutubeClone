@@ -7,7 +7,8 @@ import {
     GetChannelById,
     GetVideoDetails,
     GetSuggestData,
-    getTrending
+    getTrending,
+    getAutoCompleteSearch
 } from "./parser.js";
 
 const port = process.env.PORT || 3000;
@@ -38,6 +39,21 @@ app.use(errorHandler);
 app.get('/api/', async function (req, res, next) {
     try {
         const recentUpdates = await GetSuggestData(30, [{ type: 'video' }]);
+        res.status(200).json(recentUpdates);
+    } catch (error) {
+        next(error)
+    }
+});
+
+/**
+ * AutoComplete Search
+ */
+app.get('/api/autocomplete', async function (req, res, next) {
+    try {
+
+        const keyword = req.query.q;
+
+        const recentUpdates = await getAutoCompleteSearch(keyword);
         res.status(200).json(recentUpdates);
     } catch (error) {
         next(error)

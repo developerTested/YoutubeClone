@@ -3,9 +3,10 @@ import { Form, useNavigate, useParams } from 'react-router-dom';
 import { CiSearch } from "react-icons/ci"
 import { MdClose } from "react-icons/md"
 
-function SearchForm() {
+export default function SearchForm() {
 
     const [q, setQ] = useState("");
+    const [results, setResults] = useState([]);
 
     const navigate = useNavigate();
 
@@ -17,7 +18,7 @@ function SearchForm() {
     };
 
     return (
-        <div className="search-wrapper">
+        <div className="search-wrapper relative">
             <Form action='/search' method='get' className="w-full group flex items-center" onSubmit={(e) => searchQueryHandler(e)}>
                 <div className="relative flex items-center h-8 md:h-10 md:ml-10 md:pl-5 border border-black/20 dark:border-white/20 rounded-l-3xl group-focus-within:border-blue-500 md:group-focus-within:ml-5 md:group-focus-within:pl-0">
                     <div className="w-10 items-center justify-center hidden group-focus-within:md:flex">
@@ -35,6 +36,21 @@ function SearchForm() {
                     {q.length ? <button onClick={() => setQ("")} type="reset" className='flex items-center justify-center text-center absolute top-auto bottom-auto right-0 w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-white/20'>
                         <MdClose className="w-6 h-6" />
                     </button> : ""}
+
+                    {results.length ? <>
+                        <div className="search-results w-full p-2 mt-2 flex flex-col dark:text-white absolute left-0 right-0 top-full bg-white dark:bg-white/20">
+                            {results.map((x, i) =>
+
+                                <div key={i} className="flex items-center gap-2">
+                                    <div className="icon">
+                                        <CiSearch className='w-6 h-6' />
+                                    </div>
+                                    <div className="label">{x}</div>
+                                </div>
+                            )}
+                        </div>
+                    </>
+                        : ''}
                 </div>
                 <button
                     type='submit'
@@ -46,5 +62,3 @@ function SearchForm() {
         </div>
     );
 }
-
-export default SearchForm;

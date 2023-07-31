@@ -6,13 +6,16 @@ import { useParams } from 'react-router-dom';
 import YoutubeApi from '../utilities/youtubeApi';
 import { useApp } from '../contexts/contextApi';
 import CommentCard from '../components/CommentCard';
+import CommentList from '../components/CommentList';
 
 export default function WatchPage(props) {
 
     const { id } = useParams();
 
-    const [video, setVideo] = useState(null);
     const { loading, setLoading } = useApp();
+    const [video, setVideo] = useState(null);
+    const [comments, setComments] = useState([]);
+
 
     const fetchData = async () => {
 
@@ -34,7 +37,6 @@ export default function WatchPage(props) {
         }
     }
 
-
     useEffect(() => {
         fetchData()
     }, [id])
@@ -43,7 +45,7 @@ export default function WatchPage(props) {
 
         <div className="flex flex-col lg:flex-row gap-4">
             <div className="w-full">
-                <div className="h-80 md:h-[400px] lg:h-[400px] xl:h-[550px] dark:shadow-lg dark:shadow-slate-400">
+                <div className="rounded-md h-80 md:h-[400px] lg:h-[400px] xl:h-[550px] dark:shadow-lg dark:shadow-slate-400">
                     <ReactPlayer
                         url={`https://www.youtube.com/watch?v=${id}`}
                         controls
@@ -56,12 +58,10 @@ export default function WatchPage(props) {
                 <div className="comment-container">
                     <h2 className='text-lg my-2 px-4 py-2'>{video?.comments?.text}</h2>
 
-                    <div className="flex flex-col gap-2 divide-y dark:divide-white/20">
-                        {video?.comments?.items.length ? video?.comments?.items.map((x, i) => <CommentCard comment={x} key={i} />) : ''}
-                    </div>
+                    <CommentList items={video?.comments?.items} />
                 </div>
             </div>
-            <div className="shrink-0 flex flex-col lg:w-96">
+            <div className="shrink-0 flex flex-col lg:w-80 xl:w-96">
                 {loading ? Array.from(new Array(10)).map((_, i) => <SuggestionCard key={i} />) : video?.suggestion && video?.suggestion.length ? video?.suggestion.filter(x => x.type === 'video').map((x, i) => <SuggestionCard key={i} video={x} loading={false} />) : <SuggestionCard loading={true} />}
             </div>
         </div>

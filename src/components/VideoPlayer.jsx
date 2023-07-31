@@ -1,11 +1,21 @@
+import useVideoPlayer from '../utilities/useVideoPlayer';
 import moment from 'moment';
 import React, { useEffect, useRef, useState } from 'react'
-import { MdClosedCaption, MdFullscreen, MdFullscreenExit, MdPause, MdPlayArrow, MdSettings, MdVolumeDown, MdVolumeOff, MdVolumeUp } from "react-icons/md";
+import { MdClosedCaption, MdFullscreen, MdFullscreenExit, MdPause, MdPlayArrow, MdRefresh, MdSettings, MdVolumeDown, MdVolumeOff, MdVolumeUp } from "react-icons/md";
 
 export default function VideoPlayer({ src = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4', ...props }) {
 
     const [playing, setPlaying] = useState(false);
-    const videoRef = useRef(null);
+    const videoRef = useRef('');
+    const {
+        playerState,
+        togglePlay,
+        handleOnTimeUpdate,
+        handleVideoProgress,
+        handleVideoSpeed,
+        toggleMute,
+    } = useVideoPlayer(videoRef);
+
     const video = {};
 
     const toggleVideo = (e) => {
@@ -41,29 +51,20 @@ export default function VideoPlayer({ src = 'https://commondatastorage.googleapi
 
 
     const handleProgress = () => {
-        const duration = videoRef.current.duration;
-        const currentTime = videoRef.current.currentTime;
-        const progress = (currentTime / duration) * 100;
+
+        handleOnTimeUpdate();
+
+        const progress = playerState.progress.toFixed(2);
+
         document.querySelector('.player-progress').style.setProperty("--progress-position", progress + '%');
 
         document.querySelector('.currentTime').textContent = formatDuration(videoRef.current.currentTime);
     };
 
-
-    useEffect(() => {
-        window.addEventListener('click', toggleVideo);
-
-//        const timer = setInterval()
-
-        return () => {
-            window.removeEventListener('click', toggleVideo);
-        }
-    });
-
-
     return (
-        <div className='relative group block m-auto w-full h-full bg-gradient-to-t from-black/75'>
+        <div className='relative group block m-auto w-full h-1/2 bg-gradient-to-t from-black/75'>
             <video
+                id='player-video'
                 className='w-full h-full'
                 ref={videoRef}
                 onTimeUpdate={handleProgress}
@@ -73,22 +74,49 @@ export default function VideoPlayer({ src = 'https://commondatastorage.googleapi
                 <source src={src} type="video/mp4" />
             </video>
             <div className={`animation absolute -z-0 inset-0 w-full h-full flex items-center justify-center`}>
-                <button className={`${playing ? 'animate-play-fade' : 'animate-pause-fade'} bg-black text-white rounded-full p-4`}>
-                    {playing ? <MdPlayArrow className='w-8 h-8' /> : <MdPause className="w-8 h-8" />}
+                <button className={`${playerState.isPlaying ? 'animate-play-fade' : 'animate-pause-fade'} bg-black text-white rounded-full p-4`}>
+                    {playerState.isPlaying ? <MdPlayArrow className='w-8 h-8' /> : playerState.isEnded ? <MdRefresh className="w-8 h-8" /> : <MdPause className="w-8 h-8" />}
                 </button>
+
+                {playerState.isEnded &&
+                    <button onClick={() => videoRef.current.play()} className="bg-black text-white rounded-full p-4">
+                        <MdRefresh className="w-8 h-8" />
+                    </button>
+                }
             </div>
-            <div className="controls hidden group-hover:block hover:block w-full absolute left-0 right-0 bottom-0 hover:z-10 text-white bg-gradient-to-t from-black/75">
+            <div className="controls z-10 hidden group-hover:block hover:block w-full absolute left-0 right-0 bottom-0 hover:z-10 text-white bg-gradient-to-t from-black/75">
                 <div className="player-progress bg-white/20 w-full h-1"></div>
+                <input
+                    className='w-full'
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={playerState.progress}
+                    onChange={(e) => handleVideoProgress(e)}
+                />
                 <div className="controls flex items-center justify-between gap-2 p-2">
                     <div className="flex items-center gap-2">
 
-                        <button onClick={toggleVideo}> {playing ? <MdPause className='w-6 h-6' /> : <MdPlayArrow className='w-6 h-6' />}</button>
-                        <MdVolumeUp className='w-6 h-6' />
+                        <button onClick={togglePlay}>
+                            {playerState.isPlaying ? <MdPause className='w-8 h-8' /> : playerState.isEnded ? <MdRefresh className="w-8 h-8" /> : <MdPlayArrow className="w-8 h-8" />}
+                        </button>
 
-                        <MdVolumeDown className='w-6 h-6' />
+                        <button className='flex items-center gap-2 group' onClick={toggleMute}>
+                            {playerState.isMuted ? (
+                                <MdVolumeOff className='w-6 h-6' />
+                            ) : (
+                                <MdVolumeUp className='w-6 h-6' />
+                            )}
 
-                        <MdVolumeOff className='w-6 h-6' />
-
+                            <input
+                                className='hidden group-hover:block w-20'
+                                type="range"
+                                min="0"
+                                max="1"
+                                value={videoRef.current.volume}
+                                onChange={(e) => handleVideoProgress(e)}
+                            />
+                        </button>
                         <div className="block currentTime">{formatDuration(videoRef.current?.currentTime)}</div>
                         <div className="block">/</div>
                         <div className="block">{formatDuration(videoRef.current?.duration)}</div>
