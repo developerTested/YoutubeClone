@@ -138,4 +138,4 @@ ViteExpress.listen(app, port, () => {
     console.log('Express server listening on port %d in %s mode', port, app.settings.env);
 });
 
-export default app;
+export default ViteExpress;
