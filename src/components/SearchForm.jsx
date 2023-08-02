@@ -59,7 +59,7 @@ export default function SearchForm() {
     }
 
     return (
-        <div className="search-wrapper relative">
+        <div className="search-wrapper relative group">
             <Form action='/search' method='get' className="w-full group flex items-center" onSubmit={(e) => searchQueryHandler(e)}>
                 <div className="relative flex items-center h-8 md:h-10 md:ml-10 md:pl-5 border border-black/20 dark:border-white/20 rounded-l-3xl group-focus-within:border-blue-500 md:group-focus-within:ml-5 md:group-focus-within:pl-0">
                     <div className="w-10 items-center justify-center hidden group-focus-within:md:flex">

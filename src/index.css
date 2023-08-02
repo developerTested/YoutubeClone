@@ -22,7 +22,7 @@ code {
         monospace;
 }
 
-.poster::before {
+.poster-img::before {
     display: block;
     content: "";
     width: 100%;

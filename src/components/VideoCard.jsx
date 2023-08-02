@@ -34,9 +34,9 @@ export default function VideoCard({ video, loading = true }) {
 
     return (
         <>
-            <div className='relative w-full max-w-lg'>
-                <div className="relative pointer poster">
-                    <Link to={`/watch/${video?.id}`} className={`block absolute inset-0 h-full max-h-60 rounded-xl overflow-hidden`}>
+            <div className='relative w-full md:max-w-lg'>
+                <div className="relative pointer poster-img">
+                    <Link to={`/watch/${video?.id}`} className={`block absolute inset-0 h-full md:max-h-60 rounded-xl overflow-hidden`}>
                         <LazyLoadImage
                             wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
                             className="h-full w-full object-cover rounded-xl"
