@@ -32,7 +32,7 @@ const router = Router();
 /**
  * Get Home page videos
  */
-router.get('/api/', async function (req, res, next) {
+router.get('/', async function (req, res, next) {
     try {
         const recentUpdates = await GetSuggestData(30, [{ type: 'video' }]);
         res.status(200).json(recentUpdates);
@@ -44,7 +44,7 @@ router.get('/api/', async function (req, res, next) {
 /**
  * AutoComplete Search
  */
-router.get('/api/autocomplete', async function (req, res, next) {
+router.get('/autocomplete', async function (req, res, next) {
     try {
 
         const keyword = req.query.q;
@@ -59,7 +59,7 @@ router.get('/api/autocomplete', async function (req, res, next) {
 /**
  * Get Search results
  */
-router.get('/api/search', async function (req, res, next) {
+router.get('/search', async function (req, res, next) {
 
     try {
 
@@ -78,7 +78,7 @@ router.get('/api/search', async function (req, res, next) {
 /**
  * Get Video details with suggestions
  */
-router.get('/api/watch/:id', async function (req, res, next) {
+router.get('/watch/:id', async function (req, res, next) {
 
     try {
         const videoId = req.params.id;
@@ -94,7 +94,7 @@ router.get('/api/watch/:id', async function (req, res, next) {
 /**
  * Get Channel details 
  */
-router.get('/api/channel/:id', async function (req, res, next) {
+router.get('/channel/:id', async function (req, res, next) {
 
     try {
         const channelId = req.params.id;
@@ -111,7 +111,7 @@ router.get('/api/channel/:id', async function (req, res, next) {
 /**
  * Menus
  */
-router.get('/api/trending', async function (req, res, next) {
+router.get('/trending', async function (req, res, next) {
 
     try {
         const name = req.params.name;
