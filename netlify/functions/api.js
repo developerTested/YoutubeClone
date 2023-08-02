@@ -1,5 +1,5 @@
 import serverless from 'serverless-http';
-import express, { Router } from 'express';
+import express from 'express';
 import cors from 'cors';
 
 import {
@@ -9,7 +9,7 @@ import {
     GetSuggestData,
     getTrending,
     getAutoCompleteSearch
-} from "../../src/serverApi/parser";
+} from "../../src/serverApi/parser.js";
 
 const port = process.env.PORT || 3000;
 
@@ -27,12 +27,16 @@ const errorHandler = (error, req, res, next) => {
     res.status(400).send(error.message);
 }
 
-const router = Router();
+const app = express();
+
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(errorHandler);
 
 /**
  * Get Home page videos
  */
-router.get('/', async function (req, res, next) {
+app.get('/api/', async function (req, res, next) {
     try {
         const recentUpdates = await GetSuggestData(30, [{ type: 'video' }]);
         res.status(200).json(recentUpdates);
@@ -44,7 +48,7 @@ router.get('/', async function (req, res, next) {
 /**
  * AutoComplete Search
  */
-router.get('/autocomplete', async function (req, res, next) {
+app.get('/api/autocomplete', async function (req, res, next) {
     try {
 
         const keyword = req.query.q;
@@ -59,7 +63,7 @@ router.get('/autocomplete', async function (req, res, next) {
 /**
  * Get Search results
  */
-router.get('/search', async function (req, res, next) {
+app.get('/api/search', async function (req, res, next) {
 
     try {
 
@@ -78,7 +82,7 @@ router.get('/search', async function (req, res, next) {
 /**
  * Get Video details with suggestions
  */
-router.get('/watch/:id', async function (req, res, next) {
+app.get('/api/watch/:id', async function (req, res, next) {
 
     try {
         const videoId = req.params.id;
@@ -94,7 +98,7 @@ router.get('/watch/:id', async function (req, res, next) {
 /**
  * Get Channel details 
  */
-router.get('/channel/:id', async function (req, res, next) {
+app.get('/api/channel/:id', async function (req, res, next) {
 
     try {
         const channelId = req.params.id;
@@ -111,7 +115,7 @@ router.get('/channel/:id', async function (req, res, next) {
 /**
  * Menus
  */
-router.get('/trending', async function (req, res, next) {
+app.get('/api/trending', async function (req, res, next) {
 
     try {
         const name = req.params.name;
@@ -125,10 +129,5 @@ router.get('/trending', async function (req, res, next) {
     }
 });
 
-const api = express();
-
-api.use(cors(corsOptions));
-api.use(express.json());
-api.use(errorHandler);
-
-export const handler = serverless(api);
+export default app;
+export const handler = serverless(app);
