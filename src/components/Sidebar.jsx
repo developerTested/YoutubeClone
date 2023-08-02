@@ -223,7 +223,7 @@ export default function SideBar(props) {
                     {menuItems.map((item, index) => (
                         <React.Fragment key={index}>
                             {miniMenu ?
-                                <div onClick={(e) => handleClick(e, item.label, item.url)} className={`block px-1 py-2.5 text-center rounded-md ${(active === item.url) ? 'bg-black/5 dark:bg-white/10' : ''} hover:bg-black/10 dark:hover:bg-white/20`} key={index}>
+                                <div onClick={(e) => handleClick(e, item.label, item.url)} className={`cursor-pointer block px-1 py-2.5 text-center rounded-md ${(active === item.url) ? 'bg-black/5 dark:bg-white/10' : ''} hover:bg-black/10 dark:hover:bg-white/20`} key={index}>
                                     <div className={`m-auto h-6 w-6 icon ${(active === item.url) ? 'text-[red]' : ''}`}> {item.icon}</div>
                                     <div className={`label text-[0.65rem] ${(active === item.url) ? 'font-semibold' : ''}`}>{item.title}</div>
                                 </div>

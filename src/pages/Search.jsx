@@ -14,6 +14,8 @@ export default function Search(props) {
 
     const fetchData = async () => {
 
+        setLoading(true);
+
         try {
             const response = await YoutubeApi.get('/search?keyword=' + keyword)
             setResult(response.items);
@@ -27,15 +29,14 @@ export default function Search(props) {
         }
 
     }
-
-
+    
     useEffect(() => {
         fetchData()
     }, [keyword])
 
     return (
         <div className="grid grid-cols-2 md:grid-cols-1 gap-2 p-5">
-            {result.length ? result.map((item, i) => {
+            {loading ? Array.from(new Array(5)).map((_, i) => <SearchResultVideoCard key={i} />) : result.length ? result.map((item, i) => {
                 return (
                     <SearchResultVideoCard
                         key={i}

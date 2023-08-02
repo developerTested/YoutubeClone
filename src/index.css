@@ -22,6 +22,14 @@ code {
         monospace;
 }
 
+.poster::before {
+    display: block;
+    content: "";
+    width: 100%;
+    padding-top: 56.25%;
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 .load-bar {
     position: fixed;
     top: 0;

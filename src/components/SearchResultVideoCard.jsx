@@ -6,6 +6,25 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 
 export default function SearchResultVideoCard({ video }) {
 
+    if (!video) {
+        return (
+            <div className="flex flex-col md:flex-row gap-4 animate-pulse">
+                <div className="relative rounded-xl shrink-0 h-48 md:h-28 lg:h-40 xl:h-48 w-full md:w-48 lg:w-64 xl:w-80 bg-slate-200 dark:bg-white/20"></div>
+                <div className="flex flex-col gap-1 w-full">
+                    <div className="text-lg font-medium line-clamp-2 dark:text-white h-8 bg-slate-200 dark:bg-white/20"></div>
+                    <div className='text-xs stats flex gap-2 items-center text-gray-700 dark:text-white/70 h-6 bg-slate-200 dark:bg-white/20'></div>
+                    <div className="mt-2 flex items-center gap-2 rounded-full overflow-hidden">
+                        <div className="w-8 h-8 block rounded-full bg-slate-200 dark:bg-white/20"></div>
+                        <div className="text-sm flex gap-2 items-center text-gray-700 dark:text-white/70">
+                            <div className="w-96 h-8 bg-slate-200 dark:bg-white/20"></div>
+                        </div>
+                    </div>
+                    <div className="w-full h-8 bg-slate-200 dark:bg-white/20"></div>
+                </div>
+            </div>
+        )
+    }
+
     return (
         <>
             {video?.type === 'channel' ? <>

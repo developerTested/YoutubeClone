@@ -34,12 +34,12 @@ export default function VideoCard({ video, loading = true }) {
 
     return (
         <>
-            <div className='relative'>
-                <div className="poster relative">
-                    <Link to={`/watch/${video?.id}`} className="block relative w-auto h-fit md:rounded-xl overflow-hidden">
+            <div className='relative w-full max-w-lg'>
+                <div className="relative pointer poster">
+                    <Link to={`/watch/${video?.id}`} className={`block absolute inset-0 h-full max-h-60 rounded-xl overflow-hidden`}>
                         <LazyLoadImage
-                            wrapperClassName="w-full h-full block bg-black/10"
-                            className='block w-full h-full'
+                            wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
+                            className="h-full w-full object-cover rounded-xl"
                             src={video?.thumbnails[video?.thumbnails?.length - 1]?.url}
                             alt={video?.title}
                         />
@@ -51,11 +51,9 @@ export default function VideoCard({ video, loading = true }) {
                         <img className="w-9 h-9 rounded-full" src={video?.channel?.avatar?.url} />
                     </div>
                     <div className="flex-1 info flex flex-col gap-y-1.5">
-                        <h3 className="title">
-                            <Link to={`/watch/${video?.id}`} className='block text-sm font-semibold line-clamp-2'>
-                                {video?.title}
-                            </Link>
-                        </h3>
+                        <Link to={`/watch/${video?.id}`} className='text-sm font-semibold line-clamp-2'>
+                            {video?.title}
+                        </Link>
 
                         {video?.channel &&
                             <Link to={video?.channel?.url} className='user text-xs text-gray-800 dark:text-white/70 flex items-center gap-2'>
