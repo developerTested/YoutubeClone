@@ -8,7 +8,9 @@ import {
     GetVideoDetails,
     GetSuggestData,
     getTrending,
-    getAutoCompleteSearch
+    getAutoCompleteSearch,
+    getMoreComments,
+    getMoreSuggestions
 } from "../../src/serverApi/parser.js";
 
 const port = process.env.PORT || 3000;
@@ -92,7 +94,35 @@ app.get('/api/watch/:id', async function (req, res, next) {
     } catch (error) {
         next(error);
     }
+});
 
+/**
+ * Get Video More Comments
+ */
+app.post('/api/watch/:id/comments', async function (req, res, next) {
+
+    try {
+        const data = req.body.context;
+        const comments = await getMoreComments(data);
+        res.status(200).json(comments);
+    } catch (error) {
+        next(error);
+    }
+});
+
+
+/**
+ * Get Video more suggestions
+ */
+app.post('/api/watch/:id/suggestions', async function (req, res, next) {
+
+    try {
+        const data = req.body.context;
+        const suggestions = await getMoreSuggestions(data);
+        res.status(200).json(suggestions);
+    } catch (error) {
+        next(error);
+    }
 });
 
 /**

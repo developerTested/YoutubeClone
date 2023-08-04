@@ -7,6 +7,7 @@ import YoutubeApi from '../utilities/youtubeApi';
 import { useApp } from '../contexts/contextApi';
 import CommentCard from '../components/CommentCard';
 import CommentList from '../components/CommentList';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
 export default function WatchPage(props) {
 
@@ -14,8 +15,10 @@ export default function WatchPage(props) {
 
     const { loading, setLoading } = useApp();
     const [video, setVideo] = useState(null);
-    const [comments, setComments] = useState([]);
+    const [suggestions, setSuggestions] = useState([]);
+    const [context, setContext] = useState(null);
 
+    const copySuggestionList = suggestions;
 
     const fetchData = async () => {
 
@@ -26,6 +29,8 @@ export default function WatchPage(props) {
             const response = await YoutubeApi.get('/watch/' + id);
 
             setVideo(response);
+            setSuggestions(response.suggestion);
+            setContext(response.suggestionContext);
 
             document.title = response.title;
 
@@ -37,6 +42,23 @@ export default function WatchPage(props) {
         }
     }
 
+    const fetchMoreSuggestions = async () => {
+
+        try {
+
+            const response = await YoutubeApi.post(`/watch/${id}/suggestions`, {
+                context,
+            });
+
+            const newComments = [...new Set([...suggestions, ...response.items])];
+
+            setSuggestions(newComments);
+            setContext(response.nextPage);
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     useEffect(() => {
         fetchData()
     }, [id])
@@ -44,7 +66,7 @@ export default function WatchPage(props) {
     return (
 
         <div className="flex flex-col lg:flex-row gap-4">
-            <div className="w-full">
+            <div className="w-full lg:w-[calc(100%_-_320px)]">
                 <div className="rounded-md h-80 md:h-[400px] lg:h-[400px] xl:h-[550px] dark:shadow-lg dark:shadow-slate-400">
                     <ReactPlayer
                         url={`https://www.youtube.com/watch?v=${id}`}
@@ -58,11 +80,22 @@ export default function WatchPage(props) {
                 <div className="comment-container">
                     <h2 className='text-lg my-2 px-4 py-2'>{video?.comments?.text}</h2>
 
-                    <CommentList items={video?.comments?.items} />
+                    <CommentList items={video?.comments?.items} video={video} />
                 </div>
             </div>
-            <div className="shrink-0 flex flex-col lg:w-80 xl:w-96">
-                {loading ? Array.from(new Array(10)).map((_, i) => <SuggestionCard key={i} />) : video?.suggestion && video?.suggestion.length ? video?.suggestion.filter(x => x.type === 'video').map((x, i) => <SuggestionCard key={i} video={x} loading={false} />) : <SuggestionCard loading={true} />}
+            <div className="shrink-0 flex flex-col lg:w-80 xl:w-96 relative">
+                <div className="w-full h-fit overflow-auto">
+                    {loading ? Array.from(new Array(10)).map((_, i) => <SuggestionCard key={i} />) :
+                        <InfiniteScroll
+                            next={fetchMoreSuggestions}
+                            dataLength={suggestions.length}
+                            hasMore={true}
+                            loader={<SuggestionCard />}
+                        >
+                            {suggestions && suggestions.length ? suggestions.filter(x => x.type === 'video').map((x, i) => <SuggestionCard key={i} video={x} loading={false} />) : <SuggestionCard loading={true} />}
+                        </InfiniteScroll>
+                    }
+                </div>
             </div>
         </div>
 

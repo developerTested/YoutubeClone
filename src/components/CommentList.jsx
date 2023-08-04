@@ -1,23 +1,44 @@
 import React, { useEffect, useRef, useState } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 import CommentCard from './CommentCard'
+import YoutubeApi from '../utilities/youtubeApi';
 
-export default function CommentList({ items = [], onScroll }) {
+export default function CommentList({ items, video }) {
+
+    if (!video) {
+        return <CommentSkeleton />
+    }
 
     const [comments, setComments] = useState(items);
+    const [context, setContext] = useState(video.commentContext);
     const ref = useRef();
+
+    const fetchComments = async () => {
+        try {
+            const response = await YoutubeApi.post(`/watch/${video.id}/comments`, {
+                context,
+            });
+
+            const newComments = [...new Set([...comments, ...response.items])];
+
+            setComments(newComments);
+            setContext(response.nextPage);
+        } catch (error) {
+            console.log(error);
+        }
+    }
 
     return (
         <div ref={ref} className="relative w-full h-fit overflow-auto flex flex-col gap-2 divide-y dark:divide-white/20">
-
-            {items?.length ?
+            {comments && comments.length ?
 
                 <InfiniteScroll
-                    dataLength={items?.length}
+                    next={fetchComments}
+                    dataLength={comments.length}
                     hasMore={true}
                     loader={<CommentSkeleton />}
                 >
-                    {items && items?.length ? items?.map((x, i) => <CommentCard comment={x} key={i} />) : ''}
+                    {comments && comments?.length ? comments?.map((x, i) => <CommentCard comment={x} key={i} />) : ''}
                 </InfiniteScroll> : <div className=""></div>}
         </div>
     )

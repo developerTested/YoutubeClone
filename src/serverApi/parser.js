@@ -417,13 +417,12 @@ export const GetVideoDetails = async (videoId) => {
         const result = await page.initData.contents.twoColumnWatchNextResults;
         const playerData = await page.playerData;
 
-        let videoInfo, channelInfo = null, contToken;
+        let videoInfo = null, channelInfo = null, contToken = null;
 
         await result.results.results.contents.forEach((content) => {
             if (content.itemSectionRenderer?.contents[0].continuationItemRenderer) {
-                contToken =
-                    content.itemSectionRenderer?.contents[0].continuationItemRenderer.continuationEndpoint
-                        .continuationCommand.token;
+                contToken = content.itemSectionRenderer?.contents[0].continuationItemRenderer
+                    .continuationEndpoint.continuationCommand.token;
             } else if (content.videoPrimaryInfoRenderer) {
                 videoInfo = content.videoPrimaryInfoRenderer;
             } else if (content.videoSecondaryInfoRenderer) {
@@ -445,9 +444,25 @@ export const GetVideoDetails = async (videoId) => {
 
         const viewCount = isLive ? videoInfo?.viewCount?.videoViewCountRenderer?.viewCount?.runs?.map((x) => x.text).join('') : videoInfo.viewCount.videoViewCountRenderer?.shortViewCount?.simpleText;
 
-        const suggestionList = result.secondaryResults.secondaryResults.results
-            .filter((y) => y.compactVideoRenderer)
-            .map((x) => compactVideoRenderer(x));
+
+        const suggestionList = [];
+        let suggestionToken = null;
+
+        const suggestionListContainer = result.secondaryResults.secondaryResults.results;
+
+        for (const conitem of suggestionListContainer) {
+
+            if (conitem.compactVideoRenderer) {
+                suggestionList.push(compactVideoRenderer(conitem));
+            } else if (conitem.continuationItemRenderer) {
+                suggestionToken = conitem.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+            }
+
+        }
+
+        const suggestionContext = await { context: context, continuation: suggestionToken };
+        
+        const suggestionNextPage = { nextPageToken: apiToken, nextPageContext: suggestionContext }
 
         const channelUrl = channelInfo.owner.videoOwnerRenderer.navigationEndpoint.commandMetadata.webCommandMetadata.url;
 
@@ -471,8 +486,12 @@ export const GetVideoDetails = async (videoId) => {
             channel,
             player,
             suggestion: suggestionList,
+            suggestionContext: suggestionNextPage,
             isLive,
-            comments: await getComments(nextPage) ?? []
+            comments: [],
+            commentContext: nextPage,
+            comments: await getComments(nextPage) ?? [],
+            source: page.data,
         }
 
         return await Promise.resolve(res);
@@ -482,7 +501,7 @@ export const GetVideoDetails = async (videoId) => {
 };
 
 export const getComments = async (nextPage) => {
-    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.apiToken}`;
+    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
     const items = [];
 
     try {
@@ -497,7 +516,7 @@ export const getComments = async (nextPage) => {
 
         const commentHeader = response[0]?.reloadContinuationItemsCommand?.continuationItems[0]?.commentsHeaderRenderer;
 
-        const commentCounts = commentHeader.countText?.runs?.map(x => x.text).join('');
+        const commentCounts = commentHeader?.countText?.runs?.map(x => x.text).join('');
 
         const itemList = page.data?.onResponseReceivedEndpoints[1]?.reloadContinuationItemsCommand;
 
@@ -571,12 +590,148 @@ export const getComments = async (nextPage) => {
                 items.push(commentItem);
 
             } else if (conitem.continuationItemRenderer) {
-                nextPage.nextPageContext.continuation =
-                    conitem.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+                nextPage.nextPageContext.continuation = conitem.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
             }
         }
 
         return await Promise.resolve({ text: commentCounts, items, nextPage: nextPage });
+    } catch (ex) {
+        await console.error(ex);
+        return await Promise.reject([]);
+    }
+};
+
+export const getMoreSuggestions = async (nextPage) => {
+    const items = [];
+
+    if(!nextPage?.nextPageToken) return Promise.resolve(nextPage);
+
+    try {
+        const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
+
+        const page = await axios.post(
+            encodeURI(endpoint),
+            nextPage.nextPageContext
+        );
+
+        const response = page.data.onResponseReceivedEndpoints;
+
+        if (!response) return [];
+
+        const itemList = response[0]?.appendContinuationItemsAction;
+
+        if (!itemList?.continuationItems) {
+            return response;
+        }
+
+        for (const conitem of itemList.continuationItems) {
+
+            if (conitem.compactVideoRenderer) {
+                items.push(compactVideoRenderer(conitem));
+            } else if (conitem.continuationItemRenderer) {
+                nextPage.nextPageContext.continuation = conitem.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+            }
+
+        }
+
+        return await Promise.resolve({ items, nextPage: nextPage });
+    } catch (ex) {
+        await console.error(ex);
+        return await Promise.reject([]);
+    }
+}
+
+export const getMoreComments = async (nextPage) => {
+    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.apiToken}`;
+    const items = [];
+
+    try {
+        const page = await axios.post(
+            encodeURI(endpoint),
+            nextPage.nextPageContext
+        );
+
+        const response = page.data.onResponseReceivedEndpoints;
+
+        if (!response) return [];
+
+        const itemList = response[0]?.appendContinuationItemsAction;
+
+        if (!itemList?.continuationItems) {
+            return [];
+        }
+
+        for (const conitem of itemList.continuationItems) {
+
+            const commentThreadRenderer = conitem.commentThreadRenderer;
+
+            if (commentThreadRenderer) {
+
+                const comment = commentThreadRenderer.comment.commentRenderer;
+                const reply = commentThreadRenderer?.replies?.commentRepliesRenderer;
+                const repliesToken = reply?.contents[0]?.continuationItemRenderer
+                    ?.continuationEndpoint?.continuationCommand?.token;
+
+                let artist = false;
+                if (comment.authorCommentBadge
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType === 'OFFICIAL_ARTIST_BADGE') {
+                    artist = true;
+                }
+
+                let verified = false;
+                if (comment.authorCommentBadge
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer
+                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
+                    && ["CHECK", "CHECK_CIRCLE_THICK"]
+                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)) {
+                    verified = true;
+                }
+
+                const channelUrl = comment.authorText.simpleText;
+
+                const channel = {
+                    id: channelUrl ? channelUrl?.replace('@', '') : '',
+                    title: channelUrl,
+                    url: channelUrl ? channelUrl?.replace('@', '/channel/') : '',
+                    avatar: comment.authorThumbnail.thumbnails,
+                    verified,
+                    artist,
+                };
+
+                const commentItem = {
+                    channel,
+                    isOwner: comment.authorIsChannelOwner,
+                    content: comment.contentText?.runs?.map(x => x.text).join(''),
+                    publishedAt: comment.publishedTimeText?.runs?.map(x => x.text).join(''),
+                    likes: comment.voteCount?.simpleText,
+                    replyCount: comment.replyCount,
+                    repliesToken,
+                }
+
+                if (repliesToken) {
+
+                    const replyContext = {
+                        context: nextPage.nextPageContext.context,
+                        continuation: repliesToken
+                    };
+
+                    const replyNextPage = { nextPageToken: nextPage.nextPageToken, nextPageContext: replyContext }
+
+                    const replies = await getCommentReplies(replyNextPage);
+
+                    commentItem.replies = replies;
+                }
+
+                items.push(commentItem);
+
+            } else if (conitem.continuationItemRenderer) {
+                nextPage.nextPageContext.continuation = conitem.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+            }
+        }
+
+        return await Promise.resolve({ items, nextPage: nextPage });
     } catch (ex) {
         await console.error(ex);
         return await Promise.reject([]);
