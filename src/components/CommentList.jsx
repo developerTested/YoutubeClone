@@ -3,9 +3,9 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import CommentCard from './CommentCard'
 import YoutubeApi from '../utilities/youtubeApi';
 
-export default function CommentList({ items, video }) {
+export default function CommentList({ items, video, loading = true }) {
 
-    if (!video) {
+    if (!video || loading) {
         return <CommentSkeleton />
     }
 
@@ -30,6 +30,9 @@ export default function CommentList({ items, video }) {
 
     return (
         <div ref={ref} className="relative w-full h-fit overflow-auto flex flex-col gap-2 divide-y dark:divide-white/20">
+            
+            <h2 className='text-lg my-2 px-4 py-2'>{video?.comments?.text}</h2>
+
             {comments && comments.length ?
 
                 <InfiniteScroll

@@ -642,7 +642,10 @@ export const getMoreSuggestions = async (nextPage) => {
 }
 
 export const getMoreComments = async (nextPage) => {
-    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.apiToken}`;
+
+    if(!nextPage?.nextPageToken) return Promise.resolve(nextPage); 
+
+    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
     const items = [];
 
     try {

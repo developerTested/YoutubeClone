@@ -77,10 +77,10 @@ export default function WatchPage(props) {
                     />
                 </div>
                 <VideoDetails video={video} loading={loading} />
-                <div className="comment-container">
-                    <h2 className='text-lg my-2 px-4 py-2'>{video?.comments?.text}</h2>
 
-                    <CommentList items={video?.comments?.items} video={video} />
+                <div className="comment-container">
+
+                 <CommentList items={video?.comments?.items} video={video} loading={loading} />
                 </div>
             </div>
             <div className="shrink-0 flex flex-col lg:w-80 xl:w-96 relative">
