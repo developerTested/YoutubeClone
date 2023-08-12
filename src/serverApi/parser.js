@@ -149,10 +149,13 @@ export const GetData = async (
                 });
             }
         });
+
+        const itemList = items.filter((x) => x.id != null)
+
         const apiToken = await page.apiToken;
         const context = await page.context;
         const nextPageContext = await { context: context, continuation: contToken };
-        const itemsResult = limit != 0 ? items.slice(0, limit) : items;
+        const itemsResult = itemList != 0 ? itemList.slice(0, limit) : itemList;
         return await Promise.resolve({
             items: itemsResult,
             nextPage: { nextPageToken: apiToken, nextPageContext: nextPageContext }

@@ -6,7 +6,7 @@ import { LazyLoadImage } from "react-lazy-load-image-component";
 
 export default function SearchResultVideoCard({ video }) {
 
-    if (!video) {
+    if (!video?.id) {
         return (
             <div className="flex flex-col md:flex-row gap-4 animate-pulse">
                 <div className="relative rounded-xl shrink-0 h-48 md:h-28 lg:h-40 xl:h-48 w-full md:w-48 lg:w-64 xl:w-80 bg-slate-200 dark:bg-white/20"></div>
@@ -29,23 +29,32 @@ export default function SearchResultVideoCard({ video }) {
         <>
             {video?.type === 'channel' ? <>
                 <Link to={video?.url}>
-                    <div className="flex flex-col md:flex-row gap-4">
+                    <div className="flex flex-col md:flex-row gap-4 border border-slate-200">
                         <div className="relative shrink-0 h-48 md:h-28 lg:h-40 xl:h-48 w-full md:w-48 lg:w-64 xl:w-80">
-                            <img
-                                className="w-fit h-fit m-auto rounded-xl"
-                                src={video?.avatar[1]?.url}
+                            <LazyLoadImage
+                                wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
+                                className="h-full w-full object-cover rounded-xl"
+                                src={video?.avatar[video?.avatar?.length - 1]?.url}
+                                alt={video?.title}
                             />
                         </div>
                         <div className="flex flex-col gap-1">
-                            <div className="text-lg font-medium line-clamp-2 dark:text-white">
-                                {video?.title}
-                            </div>
-                            <div className='text-xs stats flex gap-2 items-center text-gray-700 dark:text-white/70'>
-                                <div className="channelId">{video?.id}</div>
+                            <div className="flex items-center gap-4">
+                                <div className="flex flex-col">
+                                    <div className="text-lg font-medium line-clamp-2 dark:text-white">
+                                        {video?.title}
+                                    </div>
+                                    <div className='text-xs stats flex gap-2 items-center text-gray-700 dark:text-white/70'>
+                                        <div className="channelId">{video?.id}</div>
 
-                                <div className="block">•</div>
-                                <div className="subscribers">
-                                    {video?.subscriber}
+                                        <div className="block">•</div>
+                                        <div className="subscribers">
+                                            {video?.subscriber}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="subscriber-btn rounded-full px-6 py-2 bg-black dark:bg-white dark:text-black text-white text-center">
+                                    Subscribe
                                 </div>
                             </div>
                             <div className="empty:hidden text-sm line-clamp-1 md:line-clamp-2 dark:text-white/[0.7] md:pr-24 md:my-4">
@@ -56,13 +65,12 @@ export default function SearchResultVideoCard({ video }) {
                 </Link>
             </> :
                 <Link to={`/watch/${video?.id}`}>
-                    <div className="flex flex-col md:flex-row gap-4 hover:bg-slate-100 dark:hover:bg-white/5">
+                    <div className="flex flex-col md:flex-row gap-4 rounded-md hover:bg-slate-100 dark:hover:bg-white/5">
                         <div className="relative shrink-0 h-48 md:h-28 lg:h-40 xl:h-48 w-full md:w-48 lg:w-64 xl:w-80">
                             <LazyLoadImage
-                                wrapperClassName="w-full h-full block"
-                                className='block w-full h-full rounded-xl'
-                                placeholderSrc='/img/1.jpg'
-                                src={video?.thumbnails[0]?.url}
+                                wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
+                                className="h-full w-full object-cover rounded-xl"
+                                src={video?.thumbnails[video?.thumbnails?.length - 1]?.url}
                                 alt={video?.title}
                             />
 
