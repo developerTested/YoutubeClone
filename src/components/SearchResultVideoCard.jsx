@@ -46,7 +46,6 @@ export default function SearchResultVideoCard({ video }) {
                                     </div>
                                     <div className='text-xs stats flex gap-2 items-center text-gray-700 dark:text-white/70'>
                                         <div className="channelId">{video?.id}</div>
-
                                         <div className="block">•</div>
                                         <div className="subscribers">
                                             {video?.subscriber}

@@ -1,5 +1,8 @@
 import axios from "axios";
 import apiList from "./apiRoutes.js";
+import gridParser from "./methods/gridParser.js";
+import playListParser from "./methods/playListParser.js";
+import channelParser from "./methods/channelParser.js";
 
 const youtubeEndpoint = `https://www.youtube.com`;
 
@@ -297,6 +300,16 @@ export const GetChannelById = async (channelId) => {
             verified = true;
         }
 
+        let artist = false;
+        if (
+            channelHeader.badges &&
+            channelHeader.badges.length > 0 &&
+            channelHeader.badges[0].metadataBadgeRenderer &&
+            ["OFFICIAL_ARTIST_BADGE", "BADGE_STYLE_TYPE_VERIFIED_ARTIST"].includes(channelHeader.badges[0].metadataBadgeRenderer.style)
+        ) {
+            artist = true;
+        }
+
         const links = [];
 
         const primaryLinks = channelHeader?.headerLinks?.channelHeaderLinksRenderer?.primaryLinks;
@@ -324,6 +337,7 @@ export const GetChannelById = async (channelId) => {
             avatar: channelHeader.avatar.thumbnails,
             links,
             verified,
+            artist,
         }
 
         const items = tabs
@@ -338,72 +352,91 @@ export const GetChannelById = async (channelId) => {
             .filter((y) => typeof y != "undefined")
             .map((x) => x.sectionListRenderer.contents).flat()
             .map((y) => y.itemSectionRenderer.contents).flat()
-            .map((z) => z.shelfRenderer);
+        //    .map((z) => z.shelfRenderer);
 
-        const itemList = items.filter((x) => x?.content?.horizontalListRenderer)
-            .map((x) => ({ title: x.title.runs[0].text, contents: x?.content?.horizontalListRenderer })) ?? [];
 
         const results = [];
 
-        if (itemList.length) {
-            itemList.forEach((x) => {
+        const featuredItems = []
 
-                const b = x.contents.items.map((x) => {
+        items.map((x, i) => {
 
-                    let json = null;
-                    if (x.gridVideoRenderer) {
-                        json = x.gridVideoRenderer;
+            if (x.channelFeaturedContentRenderer) {
 
-                        return {
-                            id: json.videoId,
-                            type: "video",
-                            title: json.title.simpleText,
-                            channel,
-                            publishedAt: json.publishedTimeText.simpleText,
-                            views: json.shortViewCountText.simpleText,
-                            thumbnails: json.thumbnail.thumbnails,
-                        };
+                const json = x.channelFeaturedContentRenderer;
+                json.items.map((x) => featuredItems.push(parseVideoRender(x.videoRenderer)));
 
-                    } else if (x.gridPlaylistRenderer) {
-                        json = x.gridPlaylistRenderer;
+                results.push({
+                    title: json.title?.runs.map((x) => x.text).join('') ?? null,
+                    videos: featuredItems,
+                })
+            }
+            else if (x.shelfRenderer) {
 
-                        return {
-                            id: json.playlistId,
-                            type: "playlist",
-                            thumbnails: json.thumbnail.thumbnails,
-                            title: json.title.runs[0].text,
-                            publishedAt: json.publishedTimeText?.simpleText,
-                            length: json.videoCountText.runs.map((x) => x.text).join(''),
-                            videos: json.videoCountText.runs.map((x) => x.text).join(''),
-                            videoCount: json.videoCountShortText.simpleText,
-                            isLive: false
+                const json = x.shelfRenderer;
+
+                const b = []
+                if (json.content.horizontalListRenderer) {
+                    const itemList = json.content.horizontalListRenderer.items;
+
+                    itemList.map((x) => {
+                        if (x.gridVideoRenderer) {
+                            b.push(gridParser(x, channel));
+                        } else if (x.gridPlaylistRenderer) {
+                            b.push(playListParser(x));
+                        } else if (x.gridChannelRenderer) {
+                            b.push(channelParser(x.gridChannelRenderer))
                         }
 
-                    }
-                    else {
-                        return [];
-                    }
+                    })
+                } else if (json.content.expandedShelfContentsRenderer) {
 
-                });
+                    const itemList = json.content.expandedShelfContentsRenderer.items;
 
-                const cd = {
-                    title: x.title,
-                    videos: b,
+                    itemList.map((x) => {
+
+                        if (x.channelRenderer) {
+                            b.push(channelParser(x.channelRenderer))
+                        }
+
+                    });
                 }
 
-                results.push(cd);
-            })
+                results.push({ title: json.title.runs.map((x) => x.text).join(''), videos: b });
 
-        }
+            }
 
-        const exclude = ['featured', 'channels'];
+            else if (x.reelShelfRenderer) {
+                const json = x.reelShelfRenderer;
+                const reels = [];
+
+                if (json.items) {
+                    json.items.map((x) => {
+                        const json = x.reelItemRenderer;
+
+                        reels.push({
+                            id: json.videoId,
+                            type: "reel",
+                            thumbnails: json.thumbnail.thumbnails,
+                            title: json.headline.simpleText,
+                            views: json.viewCountText.simpleText,
+                        })
+                    });
+                }
+
+                results.push({ title: json.title.runs.map((x) => x.text).join(''), videos: reels });
+            }
+        });
 
         const channelJson = {
+            page,
             ...channel,
+            banner: channelHeader?.banner?.thumbnails,
+            mobileBanner: channelHeader?.mobileBanner?.thumbnails,
             description: metadata.description,
             subscriber: channelHeader.subscriberCountText.simpleText,
             videos: channelHeader.videosCountText?.runs?.map((x) => x.text).join(''),
-            results: results.filter((x) => !exclude.includes(x?.title?.toLowerCase())),
+            results,
         }
 
         return await Promise.resolve(channelJson);
@@ -464,7 +497,7 @@ export const GetVideoDetails = async (videoId) => {
         }
 
         const suggestionContext = await { context: context, continuation: suggestionToken };
-        
+
         const suggestionNextPage = { nextPageToken: apiToken, nextPageContext: suggestionContext }
 
         const channelUrl = channelInfo.owner.videoOwnerRenderer.navigationEndpoint.commandMetadata.webCommandMetadata.url;
@@ -542,7 +575,9 @@ export const getComments = async (nextPage) => {
                 if (comment.authorCommentBadge
                     && comment.authorCommentBadge.authorCommentBadgeRenderer
                     && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType === 'OFFICIAL_ARTIST_BADGE') {
+                    && ["OFFICIAL_ARTIST_BADGE", "BADGE_STYLE_TYPE_VERIFIED_ARTIST"]
+                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)
+                ) {
                     artist = true;
                 }
 
@@ -607,7 +642,7 @@ export const getComments = async (nextPage) => {
 export const getMoreSuggestions = async (nextPage) => {
     const items = [];
 
-    if(!nextPage?.nextPageToken) return Promise.resolve(nextPage);
+    if (!nextPage?.nextPageToken) return Promise.resolve(nextPage);
 
     try {
         const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
@@ -646,7 +681,7 @@ export const getMoreSuggestions = async (nextPage) => {
 
 export const getMoreComments = async (nextPage) => {
 
-    if(!nextPage?.nextPageToken) return Promise.resolve(nextPage); 
+    if (!nextPage?.nextPageToken) return Promise.resolve(nextPage);
 
     const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
     const items = [];
@@ -682,7 +717,9 @@ export const getMoreComments = async (nextPage) => {
                 if (comment.authorCommentBadge
                     && comment.authorCommentBadge.authorCommentBadgeRenderer
                     && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType === 'OFFICIAL_ARTIST_BADGE') {
+                    && ["OFFICIAL_ARTIST_BADGE", "BADGE_STYLE_TYPE_VERIFIED_ARTIST"]
+                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)
+                ) {
                     artist = true;
                 }
 
@@ -774,7 +811,9 @@ async function getCommentReplies(nextPage) {
                 if (comment.authorCommentBadge
                     && comment.authorCommentBadge.authorCommentBadgeRenderer
                     && comment.authorCommentBadge.authorCommentBadgeRenderer.icon
-                    && comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType === 'OFFICIAL_ARTIST_BADGE') {
+                    && ["OFFICIAL_ARTIST_BADGE", "BADGE_STYLE_TYPE_VERIFIED_ARTIST"]
+                        .includes(comment.authorCommentBadge.authorCommentBadgeRenderer.icon.iconType)
+                ) {
                     artist = true;
                 }
 

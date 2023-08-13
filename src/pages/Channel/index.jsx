@@ -45,7 +45,7 @@ export default function Channel() {
             <div className="block min-w-0 overflow-hidden">
 
                 <div className="w-full">
-                    {channel ? channel.results && channel.results.map((v, i) =>
+                    {channel ? channel.results && channel.results.length && channel.results.map((v, i) =>
 
                         <div key={i} className="relative block w-full">
                             <h3 className='block text-lg my-2 px-4 py-2'>

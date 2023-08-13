@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ChannelLinks from './ChannelLinks';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
+import { MdMusicNote } from 'react-icons/md';
 
 const menuItems = [
     {
@@ -32,7 +33,6 @@ const menuItems = [
 export default function ChannelHeader({ data, ...props }) {
 
     const [activeMenu, setActiveMenu] = useState('/');
-    const loading = true;
 
     if (!data) {
         return;
@@ -41,8 +41,14 @@ export default function ChannelHeader({ data, ...props }) {
     return (
         <>
             <div className="relative flex flex-col shadow">
-                <div className="banner relative bg h-60 overflow-hidden object-center">
-                    <img className='block w-full h-auto' src='/img/1.jpg' alt='cover' />
+                <div className="banner relative bg h-72 overflow-hidden">
+                    <LazyLoadImage
+                        wrapperClassName="w-full h-full"
+                        className='block w-full h-full object-cover'
+                        placeholderSrc='/img/1.jpg'
+                        src={data?.banner[data?.banner?.length - 1].url}
+                        alt={data?.title}
+                    />
 
                     <div className="block w-auto h-10 px-4 absolute bottom-0 right-0">
                         <ChannelLinks data={data?.links} />
@@ -52,10 +58,10 @@ export default function ChannelHeader({ data, ...props }) {
                     <div className="flex gap-4">
                         <div className="avatar w-20 h-20 rounded-full flex shrink-0 items-center justify-center">
                             <LazyLoadImage
-                                wrapperClassName="rounded-full w-full h-full object-cover"
-                                className='block w-full h-full object-cover'
+                                wrapperClassName="w-full h-full object-cover"
+                                className='rounded-full block w-full h-full object-cover'
                                 placeholderSrc='/img/1.jpg'
-                                src={data?.avatar?.pop()}
+                                src={data?.avatar[data.avatar.length - 1].url}
                                 alt={data?.title}
                             />
                         </div>
@@ -64,18 +70,27 @@ export default function ChannelHeader({ data, ...props }) {
                                 <div className="text-2xl">
                                     {data.title}
                                 </div>
+                                {data?.artist && (
+                                    <MdMusicNote className='w-6 h-6 block' />
+                                )}
+
                                 {data?.verified && (
                                     <img src='/verified.svg' className='w-6 h-6 block' />
                                 )}
                             </div>
-                            <div className='text-sm text-gray-500'>{data.id}</div>
+                            <div className='text-sm'>{data.id}</div>
                             <div className="flex items-center gap-2">
                                 <div className='text-sm'>{data?.subscriber ?? '0 subscribers'}</div>
                                 <div className="block">•</div>
                                 <div className='text-sm'>{data?.videos ?? '0 videos'}</div>
                             </div>
                             <div className="description">
-                                {data?.description}
+                                {data?.description && data?.description.length && data?.description.split('\n').map((x, i) =>
+                                    <React.Fragment key={i}>
+                                        {x}
+                                        <br />
+                                    </React.Fragment>
+                                )}
                             </div>
                         </div>
                     </div>

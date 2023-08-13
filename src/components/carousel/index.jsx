@@ -6,10 +6,15 @@ import ShortVideoCard from "../ShortVideoCard";
 
 export default function Carousel({
     id,
-    slides,
+    slides = [],
     card = 'video',
     loading = false,
 }) {
+
+    if (!slides) {
+        return <h1>Invalid Data</h1>
+    }
+
     const [curr, setCurr] = useState(1);
     const ref = useRef(id);
 
@@ -35,7 +40,7 @@ export default function Carousel({
     return (
         <div className="relative" ref={ref}>
             <div className="grid grid-cols-5 gap-2 transition-all duration-500 px-4">
-                {items.length ? items.map((x, i) => card === 'channel' ? <ChannelVideoCard key={i} video={x} loading={loading} /> :card === 'short' ? <ShortVideoCard key={i} video={x} loading={loading} /> : <VideoCard key={i} video={x} loading={loading} />) : ''}
+                {items.length ? items.map((x, i) => card === 'channel' ? <ChannelVideoCard key={i} video={x} loading={loading} /> : card === 'short' ? <ShortVideoCard key={i} video={x} loading={loading} /> : <VideoCard key={i} video={x} loading={loading} />) : ''}
             </div>
 
             <button
