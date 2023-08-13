@@ -4,6 +4,7 @@ import ChannelHeader from '../../components/channel/ChannelHeader';
 import { useApp } from '../../contexts/contextApi';
 import { useParams } from 'react-router-dom';
 import YoutubeApi from '../../utilities/youtubeApi';
+import ChannelCard from '../../components/channel/ChannelCard';
 
 export default function Channel() {
 
@@ -52,7 +53,7 @@ export default function Channel() {
                                 {v.title}
                             </h3>
                             <div className="block overflow-hidden min-w-0">
-                                <Carousel id={v.title} slides={v.videos} card="channel" />
+                                {v.videos && v.videos.find((x) => x.type === 'channel' && x.description != null) ? v.videos && v.videos.filter((x) => x.type === 'channel').map((x) => <ChannelCard channel={x} />) : <Carousel id={v.title} slides={v.videos} card="channel" />}
                             </div>
                         </div>
                     ) : ''}

@@ -41,12 +41,12 @@ export default function ChannelHeader({ data, ...props }) {
     return (
         <>
             <div className="relative flex flex-col shadow">
-                <div className="banner relative bg h-72 overflow-hidden">
+                <div className="banner relative bg h-72 overflow-hidden object-cover">
                     <LazyLoadImage
-                        wrapperClassName="w-full h-full"
+                        wrapperClassName="block w-full h-full !bg-cover"
                         className='block w-full h-full object-cover'
                         placeholderSrc='/img/1.jpg'
-                        src={data?.banner[data?.banner?.length - 1].url}
+                        src={data?.banner && data?.banner[data?.banner?.length - 1].url}
                         alt={data?.title}
                     />
 
@@ -58,7 +58,7 @@ export default function ChannelHeader({ data, ...props }) {
                     <div className="flex gap-4">
                         <div className="avatar w-20 h-20 rounded-full flex shrink-0 items-center justify-center">
                             <LazyLoadImage
-                                wrapperClassName="w-full h-full object-cover"
+                                wrapperClassName="w-full h-full object-cover rounded-full"
                                 className='rounded-full block w-full h-full object-cover'
                                 placeholderSrc='/img/1.jpg'
                                 src={data?.avatar[data.avatar.length - 1].url}

@@ -27,6 +27,7 @@ export default function channelParser(data) {
         id: json.navigationEndpoint.commandMetadata.webCommandMetadata.url?.replace('/@', ''),
         title: json.title.simpleText,
         type: "channel",
+        description: json?.descriptionSnippet?.runs?.map((x) => x.text).join(''),
         avatar: json.thumbnail.thumbnails,
         subscriber: json.subscriberCountText.simpleText,
         videos: json.videoCountText?.runs?.map((x) => x.text).join(''),

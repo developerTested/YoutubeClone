@@ -430,6 +430,7 @@ export const GetChannelById = async (channelId) => {
 
         const channelJson = {
             ...channel,
+            page,
             banner: channelHeader?.banner?.thumbnails,
             mobileBanner: channelHeader?.mobileBanner?.thumbnails,
             description: metadata.description,
