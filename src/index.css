@@ -64,6 +64,7 @@ code {
     animation: loading 3s linear 2s infinite;
 }
 
+.player-container,
 .player-progress {
     position: relative;
     width: 100%;
@@ -80,9 +81,29 @@ code {
     display: block;
 }
 
-.player-progress::after {
+.player-progress::after,
+.player-container .player-thumb {
     background-color: red;
+}
+
+.player-progress::after {
     right: calc(100% - var(--progress-position));
+}
+
+.player-container:hover .player-progress::after {
+    right: calc(100% - var(--progress-position));
+}
+
+.player-container .player-thumb {
+    right: calc(100% - var(--progress-position, 0));
+    left: auto;
+}
+
+.player-container input[type=range]::-webkit-slider-runnable-track,
+.player-container input[type=range]::-webkit-slider-thumb,
+.player-container input[type=range]::-moz-range-thumb {
+    border: transparent;
+    background-color: red;
 }
 
 @keyframes loading {

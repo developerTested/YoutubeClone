@@ -84,11 +84,12 @@ export default function VideoDetails({ video = null, loading = true }) {
                         </div>
                     </div>
 
+
                     {video?.player?.media?.length && video?.player?.media?.find((x) => x.url) ?
                         <Dropdown icon={<BsDownload className='w-6 h-6' />} title='Download' rounded disableRightIcon>
                             {video?.player?.media?.filter((x) => x?.url?.length)?.map((x, i) => <Dropdown.Item key={i}>
                                 <a href={x.url} title={x.label} target='_blank'>
-                                    {x.label}
+                                    {x.type === 'audio' ? 'audio' : x.label} ({x.fileType})
                                 </a>
                             </Dropdown.Item>)}
                         </Dropdown> : ''}

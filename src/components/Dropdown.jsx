@@ -4,42 +4,14 @@ import { BsChevronDown } from 'react-icons/bs';
 
 export default function Dropdown({ children, title = 'Dropdown', icon, disableRightIcon = false, ...props }) {
 
-    const [show, setShow] = useState(false);
-    const ref = useRef('menu');
-
-    const handleClick = (e) => {
-        e.preventDefault();
-        setShow(!show)
-    }
-
-    const handleClickOutside = useCallback((e) => {
-        e.preventDefault();
-        const target = e.target;
-        if (ref.current && !ref.current.contains(target)) {
-            setShow(false)
-        }
-
-        return ref.current;
-
-    }, [ref]);
-
-    useEffect(() => {
-
-        window.addEventListener("click", handleClickOutside, true)
-
-        return () => {
-            window.removeEventListener('click', handleClickOutside, true)
-        }
-    }, []);
-
-    const DropdownClasses = classNames('dropdown flex items-center justify-center gap-2 bg-slate-100 px-4 py-2', {
+    const DropdownClasses = classNames('flex items-center justify-center gap-2  bg-slate-100 dark:bg-white/20 px-4 py-2', {
         'rounded-md': !props.rounded,
         'rounded-full': props.rounded,
     }, props.className)
 
     return (
-        <div ref={ref} className='relative group'>
-            <button onClick={handleClick} className={DropdownClasses}>
+        <div className='relative dropdown group'>
+            <button className={DropdownClasses}>
                 {icon &&
                     <div className="icon">
                         {icon}
@@ -54,7 +26,7 @@ export default function Dropdown({ children, title = 'Dropdown', icon, disableRi
                     </div>
                 }
             </button>
-            <div className={`${show ? 'animate-fade-in' : 'animate-fade-out'} flex flex-col transition-all duration-700 ease-in absolute top-full left-0 right-0 z-10 bg-white divide-y divide-gray-100 dark:divide-white/10 rounded-lg border dark:border-white/10 shadow-lg mt-1 w-44 max-w-full dark:bg-black`}>
+            <div className="group-focus-within:animate-fade-in animate-fade-out flex flex-col transition-all duration-700 ease-in absolute top-full left-0 right-0 z-10 bg-white divide-y divide-gray-100 dark:divide-white/10 rounded-lg border dark:border-white/10 shadow-lg mt-1 w-44 max-w-full max-h-80 overflow-auto dark:bg-black">
                 {children}
             </div>
         </div>

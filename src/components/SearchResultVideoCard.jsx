@@ -29,7 +29,7 @@ export default function SearchResultVideoCard({ video }) {
         <>
             {video?.type === 'channel' ? <>
                 <Link to={video?.url}>
-                    <div className="flex flex-col md:flex-row gap-4 border border-slate-200">
+                    <div className="flex flex-col md:flex-row gap-4 p-2 hover:bg-slate-100 dark:hover:bg-white/5">
                         <div className="relative shrink-0 h-48 md:h-28 lg:h-40 xl:h-48 w-full md:w-48 lg:w-64 xl:w-80">
                             <LazyLoadImage
                                 wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
