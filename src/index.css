@@ -2,9 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-    .custom-h {
-        height: calc(100% - 3.5rem);
+@layer components {
+    .grid-cols-auto {
+        grid-template-columns: auto 1fr;
     }
 }
 
@@ -126,6 +126,28 @@ code {
         opacity: 0;
         -webkit-transform: scale(2);
         transform: scale(2);
+        visibility: hidden;
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+@keyframes fade-out {
+    0% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
         visibility: hidden;
     }
 }

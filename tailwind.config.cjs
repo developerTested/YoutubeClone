@@ -14,6 +14,8 @@ module.exports = {
       animation: {
         'play-fade': 'play-fade .5s linear 1 normal forwards',
         'pause-fade': 'pause-fade .5s linear 1 normal forwards',
+        'fade-in': 'fade-in .5s linear 1 normal forwards',
+        'fade-out': 'fade-out .5s linear 1 normal forwards',
       },
     },
   },

@@ -13,7 +13,7 @@ export function useMenuHandleClick() {
     const [state, updateMenuClick] = useReducer(
         (state, updates) => ({ ...state, ...updates }),
         initialState
-    );    
+    );
 
     return [state, updateMenuClick]
 }
@@ -27,4 +27,12 @@ export function useAnchor() {
     }, [])
 
     return [anchorEl, setAnchorEl]
+}
+
+export function useOutsideClick(ref, onClickOut, deps = []) {
+    useEffect(() => {
+        const onClick = ({ target }) => !ref?.contains(target) && onClickOut?.()
+        document.addEventListener("click", onClick);
+        return () => document.removeEventListener("click", onClick);
+    }, deps);
 }

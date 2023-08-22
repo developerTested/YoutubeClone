@@ -480,7 +480,6 @@ export const GetVideoDetails = async (videoId) => {
 
         const viewCount = isLive ? videoInfo?.viewCount?.videoViewCountRenderer?.viewCount?.runs?.map((x) => x.text).join('') : videoInfo.viewCount.videoViewCountRenderer?.shortViewCount?.simpleText;
 
-
         const suggestionList = [];
         let suggestionToken = null;
 
@@ -527,7 +526,6 @@ export const GetVideoDetails = async (videoId) => {
             comments: [],
             commentContext: nextPage,
             comments: await getComments(nextPage) ?? [],
-            source: page.data,
         }
 
         return await Promise.resolve(res);
@@ -1232,7 +1230,8 @@ function getVideoData(response) {
 
         const microFormat = response.microformat.playerMicroformatRenderer;
         const videoDetails = response.videoDetails;
-        const formats = videoDetails.isLive ? response.streamingData.adaptiveFormats : response.streamingData.formats;
+        const adaptiveFormats = response.streamingData.adaptiveFormats;
+        const formats = adaptiveFormats ?? response.streamingData.formats;
 
         const player = {
             id: videoDetails.videoId,
@@ -1244,17 +1243,26 @@ function getVideoData(response) {
             category: microFormat.category,
             publishDate: microFormat.publishDate,
             embed: microFormat.embed,
-            media: []
+            media: [],
+            formats,
+            adaptiveFormats,
         };
 
-        formats.map((x) => player.media.push({
-            url: x.url,
-            hls: videoDetails.isLive ? response.streamingData.hlsManifestUrl : null,
-            type: x.mimeType,
-            label: x.qualityLabel,
-            width: x.width,
-            height: x.height,
-        }))
+        formats.map((x) => {
+
+            const mime = x.mimeType?.split(/\/(.*?);/u);
+            const parsedUrl = x.url ?? decodeURI(x?.signatureCipher?.split('&url=')[1] ?? '');
+
+            player.media.push({
+                url: parsedUrl,
+                hls: videoDetails.isLive ? response.streamingData.hlsManifestUrl : null,
+                fileType: mime[1] ?? null,
+                type: mime.includes('audio') ? 'audio' : 'video',
+                label: x.qualityLabel ?? x?.quality,
+                width: x.width,
+                height: x.height,
+            })
+        })
 
         return player;
 

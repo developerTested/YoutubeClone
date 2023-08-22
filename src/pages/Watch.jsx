@@ -67,7 +67,7 @@ export default function WatchPage(props) {
 
         <div className="flex flex-col lg:flex-row gap-4">
             <div className="w-full lg:w-[calc(100%_-_320px)]">
-                <div className="rounded-md h-80 md:h-[400px] lg:h-[400px] xl:h-[550px] dark:shadow-lg dark:shadow-slate-400">
+                <div className="rounded-md h-80 md:h-[400px] lg:h-[400px] xl:h-[550px] overflow-hidden dark:shadow-lg dark:shadow-slate-400">
                     <ReactPlayer
                         url={`https://www.youtube.com/watch?v=${id}`}
                         controls
@@ -79,8 +79,7 @@ export default function WatchPage(props) {
                 <VideoDetails video={video} loading={loading} />
 
                 <div className="comment-container">
-
-                 <CommentList items={video?.comments?.items} video={video} loading={loading} />
+                    <CommentList items={video?.comments?.items} video={video} loading={loading} />
                 </div>
             </div>
             <div className="shrink-0 flex flex-col lg:w-80 xl:w-96 relative">

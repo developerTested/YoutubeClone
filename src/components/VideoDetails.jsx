@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { BsFillCheckCircleFill } from 'react-icons/bs';
+import { BsDownload, BsFillCheckCircleFill } from 'react-icons/bs';
 import { MdMoreHoriz, MdPlaylistAdd, MdShare, MdThumbDown, MdThumbUp } from 'react-icons/md';
 import { Link } from 'react-router-dom';
+import Dropdown from './DropDown';
 
 export default function VideoDetails({ video = null, loading = true }) {
 
@@ -47,7 +48,7 @@ export default function VideoDetails({ video = null, loading = true }) {
             <div className="channel-details flex items-center gap-2">
                 <div className="channel flex gap-4 w-full">
                     <div className="avatar shadow shrink-0">
-                        <img className="w-12 h-12 rounded-full" src={video?.channel.avatar[0].url} alt="avatar" />
+                        <img className="w-12 h-12 rounded-full" src={video?.channel?.avatar[video?.channel?.avatar.length - 1].url} alt="avatar" />
                     </div>
                     <div className="flex items-center gap-4 w-full">
                         <div className="channel-info w-full md:w-auto flex items-center justify-between gap-4">
@@ -82,6 +83,15 @@ export default function VideoDetails({ video = null, loading = true }) {
                             </div>
                         </div>
                     </div>
+
+                    {video?.player?.media?.length && video?.player?.media?.find((x) => x.url) ?
+                        <Dropdown icon={<BsDownload className='w-6 h-6' />} title='Download' rounded disableRightIcon>
+                            {video?.player?.media?.filter((x) => x?.url?.length)?.map((x, i) => <Dropdown.Item key={i}>
+                                <a href={x.url} title={x.label} target='_blank'>
+                                    {x.label}
+                                </a>
+                            </Dropdown.Item>)}
+                        </Dropdown> : ''}
                 </div>
             </div>
 
@@ -114,6 +124,25 @@ export default function VideoDetails({ video = null, loading = true }) {
 
                     </div> : ''}
             </div>
+
+
+            {video?.player?.keywords &&
+                <div className="keywords ">
+                    <div className="flex flex-wrap items-center gap-1">
+                        {video?.player?.keywords.map((x, i) => <div key={i} className="px-2 py-1 rounded-full bg-slate-100 dark:bg-white/20">
+                            {x}
+                        </div>)}
+                    </div>
+                </div>
+            }
+
+            <div className="flex items-center gap-1">
+                <div className="">Posted in</div>
+                <div className="font-semibold">
+                    {video?.player?.category}
+                </div>
+            </div>
+
         </div>
     );
 }

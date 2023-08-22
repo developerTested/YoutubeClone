@@ -7,6 +7,7 @@ export default function useVideoPlayer(videoElement) {
     progress: 0,
     speed: 1,
     isMuted: false,
+    isFullScreen: false,
   });
 
   const togglePlay = () => {
@@ -24,6 +25,9 @@ export default function useVideoPlayer(videoElement) {
 
   const handleOnTimeUpdate = () => {
     const progress = (videoElement.current.currentTime / videoElement.current.duration) * 100;
+
+    const ended = Boolean(progress === 100);
+
     setPlayerState({
       ...playerState,
       progress,
@@ -34,6 +38,9 @@ export default function useVideoPlayer(videoElement) {
   const handleVideoProgress = (event) => {
     const manualChange = Number(event.target.value);
     videoElement.current.currentTime = (videoElement.current.duration / 100) * manualChange;
+    playerState.isPlaying
+      ? videoElement.current.play()
+      : videoElement.current.pause();
     setPlayerState({
       ...playerState,
       progress: manualChange,
@@ -56,6 +63,71 @@ export default function useVideoPlayer(videoElement) {
     });
   };
 
+  function toggleFullScreenMode() {
+    if (document.fullscreenElement == null) {
+      videoElement?.current?.parentElement?.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+
+    setPlayerState({
+      ...playerState,
+      isFullScreen: !playerState.isFullScreen,
+    });
+  }
+
+  function toggleTheaterMode() {
+    videoElement.current.classList.toggle("theater")
+  }
+
+  function toggleMiniPlayerMode() {
+    if (videoElement.current.classList.contains("mini-player")) {
+      document.exitPictureInPicture()
+    } else {
+      videoElement.current.requestPictureInPicture()
+    }
+  }
+
+  function skip(duration) {
+    videoElement.currentTime += duration
+  }
+
+  const handleVideoKeys = (event) => {
+
+    console.log(event.key);
+
+    switch (event.key.toLowerCase()) {
+      case "k":
+        togglePlay()
+        break
+      case "f":
+        toggleFullScreenMode()
+        break
+      case "t":
+        toggleTheaterMode()
+        break
+      case "i":
+        toggleMiniPlayerMode()
+        break
+      case "m":
+        toggleMute()
+        break
+      case "arrowleft":
+      case "j":
+        skip(-5)
+        break
+      case "arrowright":
+      case "l":
+        skip(5)
+        break
+      case "c":
+        toggleCaptions()
+        break
+      default:
+        break;
+    }
+  }
+
   useEffect(() => {
     playerState.isMuted
       ? (videoElement.current.muted = true)
@@ -70,5 +142,9 @@ export default function useVideoPlayer(videoElement) {
     handleVideoProgress,
     handleVideoSpeed,
     toggleMute,
+    toggleFullScreenMode,
+    toggleMiniPlayerMode,
+    toggleTheaterMode,
+    handleVideoKeys
   };
 };
