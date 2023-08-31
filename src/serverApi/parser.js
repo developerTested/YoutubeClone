@@ -1231,8 +1231,7 @@ function getVideoData(response) {
         const microFormat = response.microformat.playerMicroformatRenderer;
         const videoDetails = response.videoDetails;
         const adaptiveFormats = response.streamingData.adaptiveFormats;
-        const formats = adaptiveFormats ?? response.streamingData.formats;
-
+        const formats = response.streamingData.formats;
         const player = {
             id: videoDetails.videoId,
             title: videoDetails.title,
@@ -1246,9 +1245,10 @@ function getVideoData(response) {
             media: [],
             formats,
             adaptiveFormats,
+            source: response,
         };
 
-        formats.map((x) => {
+        formats.length && formats.map((x) => {
 
             const mime = x.mimeType?.split(/\/(.*?);/u);
             const parsedUrl = x.url ?? decodeURI(x?.signatureCipher?.split('&url=')[1] ?? '');

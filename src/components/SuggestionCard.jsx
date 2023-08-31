@@ -55,12 +55,16 @@ export default function SuggestionCard({ video, loading = true }) {
                     )}
                 </Link>
 
-                <div className='flex items-center text-xs font-semibold truncate overflow-hidden text-gray-700 dark:text-slate-400'>
+                <div className='flex items-center gap-1 text-xs font-semibold truncate overflow-hidden text-gray-700 dark:text-slate-400'>
                     <div className="views">{video?.views}</div>
-                    <div className="mx-1">•</div>
-                    <div className="uploaded truncate">
-                        {video?.publishedAt}
-                    </div>
+                    {video?.publishedAt && (
+                        <>
+                            <div className="block">•</div>
+                            <div className="uploaded truncate">
+                                {video?.publishedAt}
+                            </div>
+                        </>
+                    )}
                 </div>
                 <div className="flex items-center gap-2">
                     {video?.isLive ?

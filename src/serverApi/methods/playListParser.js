@@ -9,7 +9,7 @@ export default function playListParser(data) {
         publishedAt: json.publishedTimeText?.simpleText,
         length: json.videoCountText.runs.map((x) => x.text).join(''),
         videos: json.videoCountText.runs.map((x) => x.text).join(''),
-        videoCount: json.videoCountShortText.simpleText,
+        videoCount: json?.videoCountShortText?.simpleText,
         isLive: false
     }
 

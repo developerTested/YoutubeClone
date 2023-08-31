@@ -29,7 +29,7 @@ export default function channelParser(data) {
         type: "channel",
         description: json?.descriptionSnippet?.runs?.map((x) => x.text).join(''),
         avatar: json.thumbnail.thumbnails,
-        subscriber: json.subscriberCountText.simpleText,
+        subscriber: json.subscriberCountText?.simpleText,
         videos: json.videoCountText?.runs?.map((x) => x.text).join(''),
         verified,
         artist,
