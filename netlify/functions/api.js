@@ -3,14 +3,15 @@ import express from 'express';
 import cors from 'cors';
 
 import {
-    GetData,
+    GetListByKeyword,
     GetChannelById,
     GetVideoDetails,
     GetSuggestData,
     getTrending,
     getAutoCompleteSearch,
     getMoreComments,
-    getMoreSuggestions
+    getMoreSuggestions,
+    GetPlaylistData
 } from "../../src/serverApi/parser.js";
 
 const port = process.env.PORT || 3000;
@@ -71,7 +72,7 @@ app.get('/api/search', async function (req, res, next) {
 
         const keyword = req.query.keyword;
 
-        const searchResults = await GetData(keyword, false, 30, [{ type: 'video', sortBy: 'upload_date' }]);
+        const searchResults = await GetListByKeyword(keyword, false, 30, [{ type: 'video', sortBy: 'upload_date' }]);
 
         res.status(200).json(searchResults);
 
@@ -136,6 +137,23 @@ app.get('/api/channel/:id', async function (req, res, next) {
         const channel = await GetChannelById(channelId);
 
         res.status(200).json(channel);
+    } catch (error) {
+        next(error);
+    }
+
+});
+
+/**
+ * Get PlayList 
+ */
+app.get('/playlist/:id', async function (req, res, next) {
+
+    try {
+        const playlistId = req.params.id;
+
+        const playlist = await GetPlaylistData(playlistId);
+
+        res.status(200).json(playlist);
     } catch (error) {
         next(error);
     }

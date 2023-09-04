@@ -3,6 +3,7 @@ import apiList from "./apiRoutes.js";
 import gridParser from "./methods/gridParser.js";
 import playListParser from "./methods/playListParser.js";
 import channelParser from "./methods/channelParser.js";
+import playListVideoItemRender from "./methods/playListVideoItemRender.js";
 
 const youtubeEndpoint = `https://www.youtube.com`;
 
@@ -58,7 +59,7 @@ export const GetYoutubeInitData = async (url) => {
     }
 };
 
-export const GetData = async (
+export const GetListByKeyword = async (
     keyword,
     withPlaylist = false,
     limit = 0,
@@ -217,9 +218,15 @@ export const nextPage = async (nextPage, withPlaylist = false, limit = 0) => {
 export const GetPlaylistData = async (playlistId, limit = 0) => {
     const endpoint = await `${youtubeEndpoint}/playlist?list=${playlistId}`;
     try {
-        const initData = await GetYoutubeInitData(endpoint);
-        const sectionListRenderer = await initData.initdata;
-        const metadata = await sectionListRenderer.metadata;
+        const page = await GetYoutubeInitData(endpoint);
+        const sectionListRenderer = await page.initData;
+
+        const metadata = await sectionListRenderer?.header?.playlistHeaderRenderer;
+
+        const banner = metadata?.playlistHeaderBanner?.heroPlaylistThumbnailRenderer?.thumbnail?.thumbnails;
+
+        const channelUrl = metadata?.ownerText?.runs[0].navigationEndpoint?.commandMetadata?.webCommandMetadata?.url;
+
         if (sectionListRenderer && sectionListRenderer.contents) {
             const videoItems = await sectionListRenderer.contents
                 .twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content
@@ -227,13 +234,25 @@ export const GetPlaylistData = async (playlistId, limit = 0) => {
                 .playlistVideoListRenderer.contents;
             let items = await [];
             await videoItems.forEach((item) => {
-                let videoRender = item.playlistVideoRenderer;
-                if (videoRender && videoRender.videoId) {
-                    items.push(parseVideoRender(item));
+                let playListRender = item.playlistVideoRenderer;
+                if (playListRender && playListRender.videoId) {
+                    items.push(playListVideoItemRender(playListRender));
                 }
             });
             const itemsResult = limit != 0 ? items.slice(0, limit) : items;
-            return await Promise.resolve({ items: itemsResult, metadata: metadata });
+            return await Promise.resolve({
+                id: playlistId,
+                type: 'playlist',
+                title: metadata?.title.simpleText,
+                views: metadata?.viewCountText?.simpleText,
+                videosCount: metadata?.numVideosText.runs?.map((x) => x.text).join(''),
+                channel: {
+                    title: metadata?.ownerText?.runs[0]?.text,
+                    url: channelUrl,
+                },
+                banner,
+                items: itemsResult, videoCount: itemsResult.length
+            });
         } else {
             return await Promise.reject("invalid_playlist");
         }
@@ -282,7 +301,10 @@ export const GetSuggestData = async (limit = 0) => {
 };
 
 export const GetChannelById = async (channelId) => {
-    const endpoint = await `${youtubeEndpoint}/@${channelId}`;
+
+    const parseChannelId = channelId.indexOf('@') !== -1 ? channelId : `@${channelId}`;
+
+    const endpoint = await `${youtubeEndpoint}/${parseChannelId}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
         const tabs = page.initData.contents.twoColumnBrowseResultsRenderer.tabs;
@@ -352,7 +374,6 @@ export const GetChannelById = async (channelId) => {
             .filter((y) => typeof y != "undefined")
             .map((x) => x.sectionListRenderer.contents).flat()
             .map((y) => y.itemSectionRenderer.contents).flat()
-        //    .map((z) => z.shelfRenderer);
 
 
         const results = [];
@@ -430,7 +451,6 @@ export const GetChannelById = async (channelId) => {
 
         const channelJson = {
             ...channel,
-            page,
             banner: channelHeader?.banner?.thumbnails,
             mobileBanner: channelHeader?.mobileBanner?.thumbnails,
             description: metadata.description,
@@ -1011,8 +1031,6 @@ export async function getTrending() {
 
     try {
 
-        //    return page.initData;
-
         const contentHeader = await page.initData?.header?.c4TabbedHeaderRenderer;
         const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
         const items = results.sectionListRenderer.contents
@@ -1210,12 +1228,12 @@ export const GetShortVideo = async () => {
     const res = await shortResult.contents
         .map((z) => z.richItemRenderer)
         .map((y) => y.content.reelItemRenderer);
-    return await res.map((json) => ({
-        id: json.videoId,
+    return await res.map((x) => ({
+        id: x.videoId,
         type: "reel",
-        thumbnail: json.thumbnail.thumbnails[0],
-        title: json.headline.simpleText,
-        inlinePlaybackEndpoint: json.inlinePlaybackEndpoint || {}
+        thumbnail: x.thumbnail?.thumbnails[0],
+        title: x.headline?.simpleText,
+        views: x.viewCountText?.simpleText,
     }));
 };
 
@@ -1245,7 +1263,6 @@ function getVideoData(response) {
             media: [],
             formats,
             adaptiveFormats,
-            source: response,
         };
 
         formats.length && formats.map((x) => {
