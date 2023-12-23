@@ -4,6 +4,13 @@ import { Link } from 'react-router-dom'
 import { LazyLoadImage } from 'react-lazy-load-image-component'
 
 export default function PostCard({ video }) {
+
+    if (!video) {
+        return <React.Fragment></React.Fragment>
+    }
+
+    const thumbnails = video.thumbnails;
+
     return (
         <div className="flex flex-col gap-2 rounded-lg border p-2">
             <div className='flex items-center gap-2'>
@@ -40,14 +47,15 @@ export default function PostCard({ video }) {
                     {video?.content}
                 </div>
 
-                <div className="w-32 h-32 shrink-0">
-                    <LazyLoadImage
-                        wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
-                        className="h-full w-full object-cover rounded-xl"
-                        src={video?.thumbnails[0]?.url}
-                        alt={video?.title}
-                    />
-                </div>
+                {thumbnails ?
+                    <div className="w-32 h-32 shrink-0">
+                        <LazyLoadImage
+                            wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
+                            className="h-full w-full object-cover rounded-xl"
+                            src={thumbnails[0]?.url}
+                            alt={video?.title}
+                        />
+                    </div> : ''}
             </div>
         </div>
     )

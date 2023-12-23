@@ -5,6 +5,7 @@ import { BsBroadcast } from 'react-icons/bs';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import Logo from '../Logo';
 import Avatar from '../Avatar';
+import PlayListCard from './PlayListCard';
 
 export default function VideoCard({ video, loading = true }) {
 
@@ -31,6 +32,10 @@ export default function VideoCard({ video, loading = true }) {
                 </div>
             </>
         )
+    }
+
+    if(['playlist'].includes(video?.type)) {
+        return <PlayListCard video={video} loading={false} />
     }
 
     const thumbnails = video.id ? video.thumbnails : '';

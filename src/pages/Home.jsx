@@ -56,7 +56,7 @@ export default function HomePage(props) {
                                     {video.subtitle && <div className="px-2 text-sm font-normal">{video.subtitle}</div>}
                                 </div>
 
-                                {video?.title?.toLowerCase()?.includes('shorts') ? <Carousel loading={false} card='shorts' slides={video.items}>
+                                {['shorts'].includes(video?.title?.toLowerCase()) ? <Carousel loading={false} card='shorts' slides={video.items}>
                                     <div className={`grid grid-flow-col overflow-hidden gap-4 px-4 snap-x snap-mandatory transition-all duration-500`}>
                                         {video.items ? video.items.map((x, i) => <ShortVideoCard key={i} video={x} loading={loading} />) : ''}
                                     </div>

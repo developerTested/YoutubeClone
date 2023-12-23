@@ -1,4 +1,5 @@
 import cardParser from "./cardParser.js";
+import channelParser from "./channelParser.js";
 import videoRenderer from "./videoRenderer.js";
 
 export default function feedParser(json) {
@@ -25,7 +26,7 @@ export default function feedParser(json) {
 
             } else if (x?.gridPlaylistRenderer) {
                 list.push(cardParser(x));
-                
+
             } else if (x.gridChannelRenderer) { // Channel List Parser
                 const json = x.gridChannelRenderer;
 
@@ -209,10 +210,49 @@ export default function feedParser(json) {
         listItems.length ? listItems.map((x) => {
 
             if (x.gridVideoRenderer) {
-
                 list.push(cardParser(x));
             } else if (x.videoCardRenderer) {
                 list.push(cardParser(x));
+            } else if (x.gridChannelRenderer) { // Channel List Parser
+                const json = x.gridChannelRenderer;
+
+                let artist = false;
+                if (
+                    json.ownerBadges &&
+                    json.ownerBadges.length > 0 &&
+                    json.ownerBadges[0].metadataBadgeRenderer &&
+                    ["OFFICIAL_ARTIST_BADGE", "BADGE_STYLE_TYPE_VERIFIED_ARTIST"]
+                        .includes(json.ownerBadges[0].metadataBadgeRenderer.style)
+                ) {
+                    artist = true;
+                }
+
+                let verified = false;
+                if (
+                    json.ownerBadges &&
+                    json.ownerBadges.length > 0 &&
+                    json.ownerBadges[0].metadataBadgeRenderer &&
+                    json.ownerBadges[0].metadataBadgeRenderer.style ===
+                    "BADGE_STYLE_TYPE_VERIFIED"
+                ) {
+                    verified = true;
+                }
+
+                const channelUrl = json.navigationEndpoint.commandMetadata.webCommandMetadata.url;
+
+                const channel = {
+                    id: json?.channelId,
+                    type: 'channel',
+                    title: json?.title?.simpleText,
+                    url: channelUrl ? channelUrl?.replace('/@', '/channel/') : '',
+                    avatar: json?.thumbnail?.thumbnails,
+                    videos: json?.videoCountText?.runs?.map((x) => x.text).join(''),
+                    subscribers: json?.subscriberCountText?.simpleText,
+                    verified,
+                    artist,
+                };
+
+                list.push(channel);
             }
 
         }) : ''

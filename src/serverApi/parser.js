@@ -1100,6 +1100,8 @@ export async function getFeed(name) {
 
     let headerItems = {}
 
+    const feedResults = [];
+
     if (contentHeader?.contents) {
 
         contentHeader.contents.map((x) => {
@@ -1130,14 +1132,13 @@ export async function getFeed(name) {
             return headerItems;
         });
 
-    } else if (contentHeader.content) {
+    } else if (contentHeader?.content) {
         const pageHeaderRenderer = contentHeader?.content.pageHeaderViewModel;
 
         headerItems.title = contentHeader.pageTitle;
         headerItems.avatar = pageHeaderRenderer?.image?.contentPreviewImageViewModel?.image?.sources?.pop();
-    
-    } else {
 
+    } else {
 
         headerItems = {
             title: contentHeader?.title,
@@ -1149,7 +1150,6 @@ export async function getFeed(name) {
 
     const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
 
-    let feedResults = [];
 
     if (results.richGridRenderer) {
 
@@ -1177,7 +1177,7 @@ export async function getFeed(name) {
                         item = feedParser(richItemContent);
                     } else if (richItemContent.videoRenderer) {
                         item = parseVideoRender(richItemContent.videoRenderer)
-                    } else if(richItemContent.postRenderer){
+                    } else if (richItemContent.postRenderer) {
                         item = parsePostRenderer(richItemContent.postRenderer);
                     }
 
@@ -1253,7 +1253,7 @@ export async function getFeed(name) {
                     items,
                 });
 
-            }
+            } 
 
         })
 

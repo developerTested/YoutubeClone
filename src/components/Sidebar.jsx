@@ -29,7 +29,7 @@ const menuItems = [
     {
         label: 'explore',
         title: 'Explore',
-        url: '/explore',
+        url: '/',
         icon: <MdExplore className="block w-6 h-6" />
     },
 
@@ -37,7 +37,7 @@ const menuItems = [
         divider: true,
         label: 'subscriptions',
         title: 'Subscriptions',
-        url: '/subscriptions',
+        url: '/',
         icon: <MdSubscriptions className="block w-6 h-6" />
     },
 
@@ -52,7 +52,7 @@ const menuItems = [
     {
         label: 'library',
         title: 'Library',
-        url: '/library',
+        url: '/',
         icon: <MdVideoLibrary className="block w-6 h-6" />
     },
 
@@ -60,7 +60,7 @@ const menuItems = [
         divider: true,
         label: 'history',
         title: 'History',
-        url: '/history',
+        url: '/',
         icon: <MdHistory className="block w-6 h-6" />
     },
 

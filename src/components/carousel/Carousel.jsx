@@ -3,6 +3,8 @@ import { MdChevronLeft, MdChevronRight } from "react-icons/md";
 import VideoCard from "../cards/VideoCard";
 import ChannelVideoCard from "../channel/ChannelVideoCard";
 import ShortVideoCard from "../cards/ShortVideoCard";
+import GameCard from "../cards/GameCard";
+import AlbumCard from "../cards/AlbumCard";
 
 export default function Carousel({
     id,
@@ -37,8 +39,6 @@ export default function Carousel({
     const navigation = (dir) => {
         const container = gridRef.current;
 
-        console.log(container);
-
         const scrolled = dir === "left"
             ? container.scrollLeft - (container.offsetWidth + 20)
             : container.scrollLeft + (container.offsetWidth + 20);
@@ -59,12 +59,14 @@ export default function Carousel({
 
     return (
         <div className="relative p-1">
-
-            <div ref={gridRef} className={`grid ${card === 'shorts' ? 'grid-flow-col overflow-hidden gap-4' : 'grid-cols-5'} px-4 snap-x snap-mandatory" gap-2 transition-all duration-500`}>
-                {slides.length ? slides.map((x, i) => card === 'channel' ? <ChannelVideoCard key={i} video={x} loading={loading} /> : card === 'shorts' ? <ShortVideoCard key={i} video={x} loading={loading} /> : <VideoCard key={i} video={x} loading={loading} />) : ''}
+            <div ref={gridRef} className={`grid ${['shorts'].includes(card) ? 'grid-flow-col overflow-hidden gap-4' : 'grid-cols-5'} px-4 snap-x snap-mandatory" gap-2 transition-all duration-500`}>
+                {slides.length ? slides.map((x, i) => x.type === 'channel' ? 
+                <ChannelVideoCard key={i} video={x} loading={loading} /> : x.type === 'reel' ? 
+                <ShortVideoCard key={i} video={x} loading={loading} /> : x.type === 'game' ? 
+                <GameCard video={x} key={i} loading={loading} />  : x.type === 'album' ? 
+                <AlbumCard video={x} key={i} loading={loading} /> : 
+                <VideoCard key={i} video={x} loading={loading} />) : ''}
             </div>
-
-
             <button
                 onClick={() => navigation('left')}
                 className={`${previousPage ? 'block' : 'hidden'} absolute top-1/2 -left-4 p-1 rounded-full shadow-lg border bg-white text-gray-800 hover:bg-white`}
@@ -77,7 +79,6 @@ export default function Carousel({
             >
                 <MdChevronRight className="w-6 h-6" />
             </button>
-
         </div>
     )
 }

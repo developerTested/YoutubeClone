@@ -8,6 +8,10 @@ import Avatar from '../Avatar';
 
 export default function PlayListCard({ video = {}, loading = true }) {
 
+    if (!video) {
+        return <React.Fragment></React.Fragment>
+    }
+
     return (
         <React.Fragment>
             <div className='relative w-full md:max-w-lg'>
@@ -49,19 +53,19 @@ export default function PlayListCard({ video = {}, loading = true }) {
                             </Link>
                         }
 
-                        <div className="block text-xs">
-                            View full playlist
-                        </div>
                         <div className='text-xs stats flex gap-2 items-center text-gray-700 dark:text-white/70'>
-                            <div className="views">{video?.views}</div>
+
+                            {video?.views ? <div className="views">{video?.views}</div> : ''}
                             {video?.publishedAt && (
                                 <>
-                                    <div className="block">•</div>
                                     <div className="uploaded">
                                         {video?.publishedAt}
                                     </div>
                                 </>
                             )}
+                        </div>
+                        <div className="block text-xs">
+                            View full playlist
                         </div>
                         <div className="flex items-center gap-2">
                             {video?.isLive ?

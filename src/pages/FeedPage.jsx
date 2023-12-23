@@ -70,37 +70,34 @@ export default function FeedPage() {
 
         {loading ? Array.from(new Array(30)).map((_, i) => <VideoCard key={i} loading={true} />) :
 
-          data && data?.items?.length ?
-
-            <React.Fragment>
+          data && data?.items?.length ? <React.Fragment>
 
 
-              {data?.items?.map((video, i) => <React.Fragment>
+            {data?.items?.map((video, i) => <React.Fragment key={i}>
 
 
-                {Array.isArray(video.items) ? <div key={i} className="grid-cols-full flex flex-col gap-2 shadow-md">
-                  <div className="flex flex-col">
-                    <h2 className="px-2 text-lg font-normal">{video?.title}</h2>
-                    {video.subtitle && <div className="px-2 text-sm font-normal">{video.subtitle}</div>}
-                  </div>
+              {Array.isArray(video.items) ? <div key={i} className="grid-cols-full flex flex-col gap-2 shadow-md">
+                <div className="flex flex-col">
+                  <h2 className="px-2 text-lg font-semibold">{video?.title}</h2>
+                  {video.subtitle && <div className="px-2 text-sm font-normal">{video.subtitle}</div>}
+                </div>
 
-                  {['shorts', 'games'].some((el) => video?.title?.toLowerCase()?.includes(el)) ? <Carousel loading={false} card='shorts' slides={video.items}></Carousel> :
-                    <React.Fragment>
-                      <div className={classNames("grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2", {
-                        'lg:grid-cols-3': !miniMenu,
-                        'lg:grid-cols-3 xl:grid-cols-4': miniMenu,
-                      })}>
+                {['shorts', 'games'].some((el) => video?.title?.toLowerCase()?.includes(el)) ? <Carousel card='shorts' loading={false} slides={video.items}></Carousel> :
+                  <React.Fragment>
+                    <div className={classNames("grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2", {
+                      'lg:grid-cols-3': !miniMenu,
+                      'lg:grid-cols-3 xl:grid-cols-4': miniMenu,
+                    })}>
 
-                        {video?.items?.filter((x) => !['channel', 'album', 'game', 'movie'].includes(x?.type?.toLowerCase())).map((video, i) => <FeedCard key={i} video={video} />)}
+                      {video?.items?.map((video, i) => <FeedCard key={i} video={video} />)}
 
-                      </div>
-                    </React.Fragment>
-                  }
+                    </div>
+                  </React.Fragment>
+                }
 
-
-                </div> : <VideoCard key={i} video={video} loading={false} />}
-              </React.Fragment>)}
-            </React.Fragment> : ''}
+              </div> : <VideoCard key={i} video={video} loading={false} />}
+            </React.Fragment>)}
+          </React.Fragment> : ''}
       </div>
     </div>
   );
