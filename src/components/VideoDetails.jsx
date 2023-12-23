@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { BsDownload, BsFillCheckCircleFill } from 'react-icons/bs';
-import { MdMoreHoriz, MdPlaylistAdd, MdShare, MdThumbDown, MdThumbUp } from 'react-icons/md';
+import { MdThumbDown, MdThumbUp } from 'react-icons/md';
 import { Link } from 'react-router-dom';
-import Dropdown from './DropDown';
+import Dropdown from './Dropdown';
 
 export default function VideoDetails({ video = null, loading = true }) {
 
