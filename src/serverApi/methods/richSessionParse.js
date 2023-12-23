@@ -31,8 +31,6 @@ export default function richSessionParse(json) {
                 const videoRenderer = item?.richItemRenderer?.content?.videoRenderer;
                 const postRenderer = item?.richItemRenderer?.content?.postRenderer;
 
-                console.log(postRenderer);
-
                 let reel = [];
 
                 if (reelItemRenderer) {
