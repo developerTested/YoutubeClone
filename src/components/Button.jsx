@@ -1,7 +1,6 @@
-import { cva } from "class-variance-authority"
-import { twMerge } from "tailwind-merge"
+import classNames from "classnames"
 
-export const buttonStyles = cva(["transition-colors"], {
+export const buttonStyles = classNames(["transition-colors"], {
     variants: {
         variant: {
             default: ["bg-secondary", "hover:bg-secondary-hover"],
@@ -37,7 +36,7 @@ export function Button({ variant, size, className, ...props }) {
     return (
         <button
             {...props}
-            className={twMerge(buttonStyles({ variant, size }), className)}
+            className={classNames(buttonStyles, className)}
         />
     )
 }
