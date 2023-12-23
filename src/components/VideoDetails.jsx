@@ -128,7 +128,8 @@ export default function VideoDetails({ video = null, loading = true }) {
 
 
             {video?.player?.keywords &&
-                <div className="keywords ">
+                <div className="keywords">
+                    <h3>Keywords</h3>
                     <div className="flex flex-wrap items-center gap-1">
                         {video?.player?.keywords.map((x, i) => <div key={i} className="px-2 py-1 rounded-full bg-slate-100 dark:bg-white/20">
                             {x}

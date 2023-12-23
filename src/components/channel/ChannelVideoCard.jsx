@@ -4,7 +4,7 @@ import VideoLength from '../VideoLength';
 import { BsBroadcast } from 'react-icons/bs';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import ChannelCard from './ChannelCard';
-import ShortVideoCard from '../ShortVideoCard';
+import ShortVideoCard from '../cards/ShortVideoCard';
 
 export default function ChannelVideoCard({ video, loading = true, ...props }) {
 

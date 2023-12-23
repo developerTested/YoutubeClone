@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import ReactPlayer from 'react-player';
-import SuggestionCard from '../components/SuggestionCard';
+import SuggestionCard from '../components/cards/SuggestionCard';
 import VideoDetails from "../components/VideoDetails";
 import { useParams } from 'react-router-dom';
 import YoutubeApi from '../utilities/youtubeApi';
 import { useApp } from '../contexts/contextApi';
-import CommentCard from '../components/CommentCard';
 import CommentList from '../components/CommentList';
 import InfiniteScroll from 'react-infinite-scroll-component';
 

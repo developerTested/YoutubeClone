@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import SearchResultVideoCard from '../components/SearchResultVideoCard';
+import SearchResultVideoCard from '../components/cards/SearchResultVideoCard';
 import { useLocation, useParams, useSearchParams } from 'react-router-dom';
 import { useApp } from '../contexts/contextApi';
 import YoutubeApi from '../utilities/youtubeApi';
@@ -35,7 +35,7 @@ export default function Search(props) {
     }, [keyword])
 
     return (
-        <div className="grid grid-cols-2 md:grid-cols-1 gap-2 p-5">
+        <div className="flex flex-col sm:grid sm:grid-cols-2 md:grid-cols-1 gap-2 p-5">
             {loading ? Array.from(new Array(5)).map((_, i) => <SearchResultVideoCard key={i} />) : result.length ? result.map((item, i) => {
                 return (
                     <SearchResultVideoCard

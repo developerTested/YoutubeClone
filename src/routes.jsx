@@ -6,8 +6,8 @@ import WatchPage from "./pages/Watch";
 import SearchPage from "./pages/Search";
 import RootLayout from "./components/RootLayout";
 import ErrorPage from "./components/ErrorPage";
-import TrendingPage from "./pages/Trending";
 import VideoPlayer from "./components/VideoPlayer";
+import FeedPage from "./pages/FeedPage";
 
 const routeList = createBrowserRouter([
     {
@@ -26,8 +26,8 @@ const routeList = createBrowserRouter([
             },
 
             {
-                path: '/trending',
-                element: <TrendingPage />
+                path: '/:name',
+                element: <FeedPage />
             },
 
             {

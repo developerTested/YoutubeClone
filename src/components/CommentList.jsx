@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
-import CommentCard from './CommentCard'
+import CommentCard from './cards/CommentCard'
 import YoutubeApi from '../utilities/youtubeApi';
 
 export default function CommentList({ items, video, loading = true }) {

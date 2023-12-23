@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import Carousel from '../../components/carousel';
+import Carousel from '../../components/carousel/Carousel';
 import ChannelHeader from '../../components/channel/ChannelHeader';
 import { useApp } from '../../contexts/contextApi';
 import { useParams } from 'react-router-dom';

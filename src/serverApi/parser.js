@@ -4,6 +4,10 @@ import gridParser from "./methods/gridParser.js";
 import playListParser from "./methods/playListParser.js";
 import channelParser from "./methods/channelParser.js";
 import playListVideoItemRender from "./methods/playListVideoItemRender.js";
+import richSessionParse from "./methods/richSessionParse.js";
+import feedParser from "./methods/feedParser.js";
+import shortVideoParser from "./methods/shortVideoParser.js";
+import parsePostRenderer from "./methods/parsePostRenderer.js";
 
 const youtubeEndpoint = `https://www.youtube.com`;
 
@@ -44,7 +48,7 @@ export const GetYoutubeInitData = async (url) => {
 
             initData = await JSON.parse(data);
 
-            if (playerResponse) {
+            if (ytPlayerData) {
                 playerData = await JSON.parse(playerResponse);
             }
 
@@ -66,8 +70,7 @@ export const GetListByKeyword = async (
     options = []
 ) => {
 
-
-    let endpoint = await `${youtubeEndpoint}/results?search_query=${keyword}`;
+    let endpoint = `${youtubeEndpoint}/results?search_query=${keyword}`;
     try {
         if (Array.isArray(options) && options.length > 0) {
             const type = options.find((z) => z.type);
@@ -96,7 +99,7 @@ export const GetListByKeyword = async (
                         case "relevance":
                             endpoint = `${endpoint}&sp=CAASAhAE`;
                         case "upload_date":
-                            endpoint = `${endpoint}&sp=CAISAhAB`;
+                            endpoint = `${endpoint}&sp=CAI%253D`;
                             break;
                         case "popular":
                             endpoint = `${endpoint}&sp=CAMSAhAB`;
@@ -114,9 +117,9 @@ export const GetListByKeyword = async (
         const sectionListRenderer = await page.initData.contents
             .twoColumnSearchResultsRenderer.primaryContents.sectionListRenderer;
 
-        let contToken = await {};
+        let contToken = {};
 
-        let items = await [];
+        let items = [];
 
         await sectionListRenderer.contents.forEach((content) => {
             if (content.continuationItemRenderer) {
@@ -158,21 +161,20 @@ export const GetListByKeyword = async (
 
         const apiToken = await page.apiToken;
         const context = await page.context;
-        const nextPageContext = await { context: context, continuation: contToken };
+        const nextPageContext = { context: context, continuation: contToken };
         const itemsResult = itemList != 0 ? itemList.slice(0, limit) : itemList;
         return await Promise.resolve({
             items: itemsResult,
             nextPage: { nextPageToken: apiToken, nextPageContext: nextPageContext }
         });
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject(ex);
     }
 };
 
 export const nextPage = async (nextPage, withPlaylist = false, limit = 0) => {
-    const endpoint =
-        await `${youtubeEndpoint}/youtubei/v1/search?key=${nextPage.nextPageToken}`;
+    const endpoint = `${youtubeEndpoint}/youtubei/v1/search?key=${nextPage.nextPageToken}`;
     try {
         const page = await axios.post(
             encodeURI(endpoint),
@@ -210,7 +212,7 @@ export const nextPage = async (nextPage, withPlaylist = false, limit = 0) => {
         const itemsResult = limit != 0 ? items.slice(0, limit) : items;
         return await Promise.resolve({ items: itemsResult, nextPage: nextPage });
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject(ex);
     }
 };
@@ -257,7 +259,7 @@ export const GetPlaylistData = async (playlistId, limit = 0) => {
             return await Promise.reject("invalid_playlist");
         }
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject(ex);
     }
 };
@@ -268,20 +270,36 @@ export const GetPlaylistData = async (playlistId, limit = 0) => {
  * @returns 
  */
 export const GetSuggestData = async (limit = 0) => {
-    const endpoint = await `${youtubeEndpoint}`;
+    const endpoint = `${youtubeEndpoint}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
-
 
         if (!page.initData.contents?.twoColumnBrowseResultsRenderer) {
             return {};
         }
 
-        const sectionListRenderer = await page.initData.contents
-            .twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content
-            .richGridRenderer.contents;
-        let items = await [];
-        let otherItems = await [];
+        const richGridRenderer = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer;
+
+        const options = await richGridRenderer?.header?.feedFilterChipBarRenderer?.contents ?? [];
+
+        const sectionListRenderer = await richGridRenderer.contents;
+        const items = [];
+        const otherItems = [];
+        const chips = []
+
+        await options.length && Array.isArray(options) && options.forEach((item) => {
+            const chipItem = item?.chipCloudChipRenderer;
+
+            const chipToken = chipItem?.navigationEndpoint?.continuationCommand?.token ?? null;
+
+            const chipText = chipItem.text?.runs.map((x) => x.text).join('') ?? null;
+
+            chips.push({
+                title: chipText,
+                nextPageToken: chipToken,
+            });
+        });
+
         await sectionListRenderer.forEach((item) => {
             if (item.richItemRenderer && item.richItemRenderer.content) {
                 let videoRender = item.richItemRenderer.content.videoRenderer;
@@ -293,9 +311,9 @@ export const GetSuggestData = async (limit = 0) => {
             }
         });
         const itemsResult = limit != 0 ? items.slice(0, limit) : items;
-        return await Promise.resolve({ items: itemsResult, shorts: otherItems });
+        return await Promise.resolve({ items: itemsResult, shorts: otherItems, chips, geoLocation: page.geoLocation });
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject(ex);
     }
 };
@@ -304,7 +322,7 @@ export const GetChannelById = async (channelId) => {
 
     const parseChannelId = channelId.indexOf('@') !== -1 ? channelId : `@${channelId}`;
 
-    const endpoint = await `${youtubeEndpoint}/${parseChannelId}`;
+    const endpoint = `${youtubeEndpoint}/${parseChannelId}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
         const tabs = page.initData.contents.twoColumnBrowseResultsRenderer.tabs;
@@ -466,7 +484,7 @@ export const GetChannelById = async (channelId) => {
 };
 
 export const GetVideoDetails = async (videoId) => {
-    const endpoint = await `${youtubeEndpoint}/watch?v=${videoId}`;
+    const endpoint = `${youtubeEndpoint}/watch?v=${videoId}`;
     try {
         const page = await GetYoutubeInitData(endpoint);
 
@@ -498,7 +516,7 @@ export const GetVideoDetails = async (videoId) => {
 
         const likeCount = videoInfo?.videoActions?.menuRenderer?.topLevelButtons[0]?.segmentedLikeDislikeButtonRenderer?.likeButton?.toggleButtonRenderer?.defaultText?.simpleText ?? 0;
 
-        const viewCount = isLive ? videoInfo?.viewCount?.videoViewCountRenderer?.viewCount?.runs?.map((x) => x.text).join('') : videoInfo.viewCount.videoViewCountRenderer?.shortViewCount?.simpleText;
+        const viewCount = isLive ? videoInfo?.viewCount?.videoViewCountRenderer?.viewCount?.runs?.map((x) => x.text).join('') : videoInfo.viewCount.videoViewCountRenderer?.extraShortViewCount?.simpleText;
 
         const suggestionList = [];
         let suggestionToken = null;
@@ -1074,142 +1092,222 @@ export async function getTrending() {
 }
 
 export async function getFeed(name) {
-    const youtubeEndpoint = name ? apiList[name] : youtubeEndpoint;
-    const page = await GetYoutubeInitData(youtubeEndpoint);
+    const endpoint = name ? apiList[name] : youtubeEndpoint;
 
-    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
-    const items = results.sectionListRenderer.contents
-        .filter((x) => x.itemSectionRenderer)
-        .map((z) => z.itemSectionRenderer.contents).flat();
+    const page = await GetYoutubeInitData(endpoint);
 
-    const itemList = [];
-    const otherItems = [];
-    const shortsList = [];
+    const contentHeader = await page.initData?.header?.c4TabbedHeaderRenderer || page.initData?.header?.carouselHeaderRenderer || page.initData?.header?.pageHeaderRenderer;
 
+    let headerItems = {}
 
+    if (contentHeader?.contents) {
 
+        contentHeader.contents.map((x) => {
 
+            if (x.carouselItemRenderer) {
+                const carouselItems = x.carouselItemRenderer.carouselItems;
 
-    items.map((z) => {
+                const promo = carouselItems.map((x) => {
 
+                    const promo = x.defaultPromoPanelRenderer;
 
-        if (z.shelfRenderer) {
+                    return {
+                        title: promo.title?.title?.runs?.map((x) => x.text).join(''),
+                        description: promo.description?.runs?.map((x) => x.text).join(''),
+                        url: promo?.navigationEndpoint?.commandMetadata?.webCommandMetadata.url?.split('v=')[1],
+                    };
+                });
 
+                headerItems.promo = promo;
+            } else if (x.topicChannelDetailsRenderer) {
+                const topicChannelDetailsRenderer = x.topicChannelDetailsRenderer;
 
-            const contents = z.shelfRenderer.content;
-
-
-            let items = [];
-
-
-            switch (name) {
-                case 'trending':
-                    items = contents.expandedShelfContentsRenderer.items;
-                    itemList.push(parseTrending(z));
-                    break;
-
-                case 'shopping':
-
-                    if (contents.verticalListRenderer) {
-                        items = contents.verticalListRenderer.items;
-                        itemList.push(parseTrending(items));
-                    } else {
-                        return false;
-                    }
-
-                    break;
-
-                case 'music':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'movies':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'live':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'gaming':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'news':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'sports':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'learning':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-                case 'fashion':
-                    items = contents.horizontalListRenderer.items;
-                    itemList.push(parseTrending(items));
-                    break;
-
-
-                default:
-                    break;
+                headerItems.title = topicChannelDetailsRenderer?.title?.simpleText;
+                headerItems.avatar = topicChannelDetailsRenderer?.avatar?.thumbnails?.pop();
+                headerItems.subscriber = topicChannelDetailsRenderer?.subtitle?.simpleText;
             }
 
+            return headerItems;
+        });
 
-        } else if (z.reelShelfRenderer) {
+    } else if (contentHeader.content) {
+        const pageHeaderRenderer = contentHeader?.content.pageHeaderViewModel;
 
-            let items = z.reelShelfRenderer.items;
+        headerItems.title = contentHeader.pageTitle;
+        headerItems.avatar = pageHeaderRenderer?.image?.contentPreviewImageViewModel?.image?.sources?.pop();
+    
+    } else {
 
-            const b = items.map(({ reelItemRenderer: x }) => shortsList.push({
-                id: x.videoId,
-                type: "reel",
-                thumbnail: x.thumbnail.thumbnails[0],
-                title: x.headline.simpleText,
-                views: x.viewCountText?.simpleText,
-            }));
 
-        } else {
-            otherItems.push(z)
+        headerItems = {
+            title: contentHeader?.title,
+            subtitle: contentHeader?.subscriberCountText?.runs?.map((x) => x.text)?.join(''),
+            avatar: contentHeader?.avatar?.thumbnails[0],
         }
+
+    }
+
+    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content;
+
+    let feedResults = [];
+
+    if (results.richGridRenderer) {
+
+        const richGridRenderer = results.richGridRenderer.contents;
+
+        richGridRenderer.map((x) => {
+
+            if (x.richSectionRenderer) {
+
+                const richContent = x.richSectionRenderer.content;
+
+                const title = richContent.richShelfRenderer?.title?.simpleText || richContent.richShelfRenderer?.title?.runs?.map((x) => x.text).join('')
+
+                const subtitle = richContent.richShelfRenderer?.subtitle?.runs?.map((x) => x.text).join('')
+                const richItemRenderer = richContent.richShelfRenderer.contents.map((x) => x.richItemRenderer);
+
+                const items = richItemRenderer.map((x) => {
+
+                    const richItemContent = x.content;
+
+                    let item;
+
+                    if (richItemContent.playlistRenderer) {
+                        const json = richItemContent.playListRender;
+                        item = feedParser(richItemContent);
+                    } else if (richItemContent.videoRenderer) {
+                        item = parseVideoRender(richItemContent.videoRenderer)
+                    } else if(richItemContent.postRenderer){
+                        item = parsePostRenderer(richItemContent.postRenderer);
+                    }
+
+                    return item;
+
+                });
+
+                feedResults.push({
+                    title,
+                    subtitle,
+                    items
+                });
+
+            } else if (x.richItemRenderer) {
+                const richItemRenderer = x.richItemRenderer.content;
+
+                feedResults.push(parseVideoRender(richItemRenderer.videoRenderer));
+            }
+
+        })
+
+    } else if (results.sectionListRenderer) {
+
+        const itemSectionRenderer = results.sectionListRenderer.contents.map((x) => x?.itemSectionRenderer) ?? [];
+
+        const itemSectionContent = itemSectionRenderer.filter((x) => x)?.map((x) => x.contents)?.flat();
+
+        itemSectionContent.map((x) => {
+
+            if (x.horizontalCardListRenderer) {
+
+                const horizontalCardListRenderer = x.horizontalCardListRenderer;
+
+                const cardHeader = horizontalCardListRenderer.header?.richListHeaderRenderer;
+
+                const title = cardHeader?.title?.simpleText || cardHeader?.title?.runs?.map((x) => x.text).join('')
+
+                const subtitle = cardHeader?.subtitle?.simpleText || cardHeader?.subtitle?.runs?.map((x) => x.text).join('');
+
+                const items = feedParser(x);
+
+                feedResults.push({
+                    title,
+                    subtitle,
+                    items
+                })
+
+            } else if (x.shelfRenderer) {
+
+                const shelfRenderer = x.shelfRenderer;
+
+                const title = shelfRenderer?.title?.simpleText || shelfRenderer?.title?.runs?.map((x) => x.text).join('')
+
+                const subtitle = shelfRenderer?.subtitle?.simpleText || shelfRenderer?.subtitle?.runs?.map((x) => x.text).join('')
+
+                const items = feedParser(shelfRenderer.content);
+
+                feedResults.push({
+                    title,
+                    subtitle,
+                    items,
+                });
+
+            } else if (x.reelShelfRenderer) {
+                const shelfRenderer = x.reelShelfRenderer;
+
+                const title = shelfRenderer?.title?.simpleText || shelfRenderer?.title?.runs?.map((x) => x.text).join('')
+
+                const items = shelfRenderer.items.map((x) => shortVideoParser(x.reelItemRenderer))
+
+                feedResults.push({
+                    title,
+                    items,
+                });
+
+            }
+
+        })
+
+    }
+
+    return await Promise.resolve({
+        ...headerItems,
+        items: feedResults,
+
     });
-
-
-    return await Promise.resolve({ items: itemList, otherItems, shortsList });
 }
 
 export const GetHomeFeed = async () => {
     const page = await GetYoutubeInitData(youtubeEndpoint);
 
-    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content.richGridRenderer.contents
-        .filter((x) => x.richSectionRenderer)
-        .map((z) => z.richSectionRenderer.content)
-        .filter((y) => y.richShelfRenderer)
-        .map((u) => u.richShelfRenderer);
+    const results = await page.initData.contents.twoColumnBrowseResultsRenderer.tabs[0].tabRenderer.content
 
-    const shortResult = results.find((i) => i.title.runs[0].text === "Shorts");
+    const richGridRenderer = results.richGridRenderer;
 
-    const trendingResult = results.find((i) => i.title.runs[0].text !== "Shorts");
+    const chips = [];
 
-    const shorts = parseShortVideo(shortResult);
+    const options = await richGridRenderer?.header?.feedFilterChipBarRenderer?.contents ?? [];
 
-    const trendingResponse = await trendingResult.contents
-        .map((z) => z.richItemRenderer)
-        .map((y) => y.content.videoRenderer);
-    const trending = trendingResponse.map((json) => parseVideoRender(json));
+    await options.length && Array.isArray(options) && options.forEach((item) => {
+        const chipItem = item?.chipCloudChipRenderer;
 
-    return {
-        shorts,
-        videos: trending,
-    }
+        const chipToken = chipItem?.navigationEndpoint?.continuationCommand?.token ?? null;
+
+        const chipText = chipItem.text?.runs.map((x) => x.text).join('') ?? null;
+
+        chips.push({
+            title: chipText,
+            nextPageToken: chipToken,
+        });
+    });
+
+    const itemList = []
+
+    let contToken = '';
+
+    const items = richGridRenderer.contents;
+
+    items.map((x) => {
+
+        if (x.continuationItemRenderer) {
+            contToken = x.continuationItemRenderer.continuationEndpoint.continuationCommand.token;
+        } else {
+            itemList.push(richSessionParse(x));
+        }
+    });
+
+    const newList = itemList.filter((x) => x);
+
+    return await Promise.resolve({ items: newList, chips, nextPageToken: contToken });
 
 };
 
@@ -1304,9 +1402,9 @@ function parseComments(response) {
  * @param {*} response 
  * @returns object
  */
-function parseVideoRender(response) {
+export function parseVideoRender(response) {
 
-    if (!response.videoId) {
+    if (!response?.videoId) {
         return response;
     }
 
@@ -1378,13 +1476,13 @@ function parseVideoRender(response) {
         const result = {
             id: response.videoId,
             type: isLive ? "Live" : "video",
-            thumbnails: response?.thumbnail?.thumbnails,
             title: response.title.runs[0].text,
             description,
             channel,
             length: response.lengthText?.simpleText,
             views: viewsCount,
             publishedAt: isLive ? response?.dateText?.simpleText : response?.publishedTimeText?.simpleText,
+            thumbnails: response?.thumbnail?.thumbnails,
             isLive,
             badges,
         };
@@ -1444,64 +1542,4 @@ function parseChannelRender(response) {
     } catch (error) {
         return error;
     }
-}
-
-function parseTrending(response = []) {
-
-    const items = [];
-
-    if (response.expandedShelfContentsRenderer) {
-        response.expandedShelfContentsRenderer.items.map((x) => {
-            if (x.videoRenderer) {
-                items.push(parseVideoRender(x.videoRenderer));
-            } else {
-                return [];
-            }
-        })
-    }
-
-
-    return items;
-
-}
-
-function parseShopping(response) {
-
-}
-
-function parseMusic(response) {
-
-}
-
-
-function parseMovies(response) {
-
-}
-
-
-function parseLive(response) {
-
-}
-
-function parseGaming(response) {
-
-}
-
-
-function parseNews(response) {
-
-}
-
-
-function parseSports(response) {
-
-}
-
-function parseLearning(response) {
-
-}
-
-
-function parseFashion(response) {
-
 }

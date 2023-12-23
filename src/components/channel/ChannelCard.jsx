@@ -25,8 +25,7 @@ export default function ChannelCard({ channel }) {
                             {channel?.title}
                         </Link>
                         <div className={`items-center flex ${channel?.description ? 'flex-row gap-2' : 'flex-col items-center justify-center'} text-xs stats text-gray-700 dark:text-white/70`}>
-                            <div className="channelId" block>{channel?.id}</div>
-                            <div className="block">•</div>
+                            <div className="channelId" block>@{channel?.id}</div>
                             <div className="subscribers">
                                 {channel?.subscriber}
                             </div>

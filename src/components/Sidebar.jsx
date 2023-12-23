@@ -81,18 +81,21 @@ const menuItems = [
     {
         label: 'news',
         title: "News",
+        url: '/news',
         icon: <ImNewspaper className="block w-6 h-6" />
     },
 
     {
         label: 'learning',
         title: "Learning",
+        url: '/learning',
         icon: <MdLightbulb className="block w-6 h-6" />
     },
 
     {
         label: 'fashion',
         title: "Fashion & beauty",
+        url: '/fashion',
         icon: <GiEclipse className="block w-6 h-6" />
     },
 

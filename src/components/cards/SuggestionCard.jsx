@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import VideoLength from './VideoLength';
+import VideoLength from '../VideoLength';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { BsBroadcast } from 'react-icons/bs';
 

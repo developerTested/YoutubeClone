@@ -18,13 +18,12 @@ export default function RootLayout() {
         
     }, [pathname]);
 
-
     const watchPage = useDrawer("/watch/:id");
 
     return (
         <div className={`block w-full ${theme}`}>
             <Header />
-            <div className="flex w-full h-full pt-14 dark:bg-black dark:text-white">
+            <div className="flex w-full h-full pt-16 dark:bg-black dark:text-white">
                 <SideBar />
                 <div className={`
                 px-4
