@@ -240,10 +240,6 @@ export default function SideBar(props) {
                             {item.divider ? <hr className="border-black/10 dark:border-white/20 my-2" /> : ''}
                         </React.Fragment>
                     ))}
-                    <hr className="border-black/10 dark:border-white/20 my-2" />
-                    <div className="block">
-                        Clone by: JS Dev Hindi
-                    </div>
                 </div>
             </div>
         </>
