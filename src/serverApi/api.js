@@ -1,5 +1,5 @@
 import ViteExpress from "vite-express";
-import app from "../../api/api.js";
+import app from "../../api/index.js";
 
 const port = process.env.PORT || 3000;
 
