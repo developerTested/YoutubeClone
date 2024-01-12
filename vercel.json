@@ -1,8 +1,10 @@
 {
-    "rewrites": [
-        {
-            "source": "/api/(.*)",
-            "destination": "/api"
-        }
-    ]
-}
+    "version": 2,
+    "functions": {
+      "api/*": {
+        "runtime": "@vercel/node",
+        "src": "./api"
+      }
+    }
+  }
+  
