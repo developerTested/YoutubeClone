@@ -1,5 +1,5 @@
 import ViteExpress from "vite-express";
-import app from "../../netlify/functions/api.js";
+import app from "../../api/api.js";
 
 const port = process.env.PORT || 3000;
 
