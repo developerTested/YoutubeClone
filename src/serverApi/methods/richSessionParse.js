@@ -7,7 +7,6 @@ export default function richSessionParse(json) {
 
     if (json.richSectionRenderer) {
 
-
         const richSectionRenderer = json.richSectionRenderer.content;
 
         if (richSectionRenderer.brandVideoShelfRenderer) {
@@ -18,9 +17,8 @@ export default function richSessionParse(json) {
                 title: 'Recommenced',
                 items: brand.content.map((x) => parseVideoRender(x.videoRenderer)),
             }
-        }
 
-        if (richSectionRenderer.richShelfRenderer) {
+        } else if (richSectionRenderer.richShelfRenderer) {
             const title = richSectionRenderer.richShelfRenderer?.title?.runs.map((x) => x.text).join('') ?? null;
             const content = json.richSectionRenderer.content.richShelfRenderer.contents;
 
@@ -37,7 +35,7 @@ export default function richSessionParse(json) {
                     reel = shortVideoParser(reelItemRenderer);
                 } else if (videoRenderer) {
                     reel = parseVideoRender(videoRenderer)
-                } else if(postRenderer){
+                } else if (postRenderer) {
                     reel = parsePostRenderer(postRenderer);
                 }
 
@@ -48,14 +46,13 @@ export default function richSessionParse(json) {
                 title,
                 items: subList,
             }
+        } else {
+            list = null;
         }
-    }
-
-    else if (json.richItemRenderer) {
+    } else if (json.richItemRenderer) {
         const videoRenderer = json.richItemRenderer.content.videoRenderer;
         list = parseVideoRender(videoRenderer)
-    }
-    else {
+    } else {
         list = json;
     }
 

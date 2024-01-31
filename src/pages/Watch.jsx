@@ -86,7 +86,7 @@ export default function WatchPage(props) {
                     {loading ? Array.from(new Array(10)).map((_, i) => <SuggestionCard key={i} />) :
                         <InfiniteScroll
                             next={fetchMoreSuggestions}
-                            dataLength={suggestions.length}
+                            dataLength={suggestions?.length}
                             hasMore={true}
                             loader={<SuggestionCard />}
                         >

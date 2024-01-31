@@ -533,7 +533,7 @@ export const GetVideoDetails = async (videoId) => {
 
         }
 
-        const suggestionContext = await { context: context, continuation: suggestionToken };
+        const suggestionContext = { context: context, continuation: suggestionToken };
 
         const suggestionNextPage = { nextPageToken: apiToken, nextPageContext: suggestionContext }
 
@@ -573,7 +573,7 @@ export const GetVideoDetails = async (videoId) => {
 };
 
 export const getComments = async (nextPage) => {
-    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
+    const endpoint = `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
     const items = [];
 
     try {
@@ -602,10 +602,12 @@ export const getComments = async (nextPage) => {
 
             if (commentThreadRenderer) {
 
-                const comment = commentThreadRenderer.comment.commentRenderer;
+                const comment = commentThreadRenderer.comment?.commentRenderer;
                 const reply = commentThreadRenderer?.replies?.commentRepliesRenderer;
                 const repliesToken = reply?.contents[0]?.continuationItemRenderer
                     ?.continuationEndpoint?.continuationCommand?.token;
+
+                if (!comment) return {};
 
                 let artist = false;
                 if (comment.authorCommentBadge
@@ -670,7 +672,7 @@ export const getComments = async (nextPage) => {
 
         return await Promise.resolve({ text: commentCounts, items, nextPage: nextPage });
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject([]);
     }
 };
@@ -681,7 +683,7 @@ export const getMoreSuggestions = async (nextPage) => {
     if (!nextPage?.nextPageToken) return Promise.resolve(nextPage);
 
     try {
-        const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
+        const endpoint = `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
 
         const page = await axios.post(
             encodeURI(endpoint),
@@ -710,7 +712,7 @@ export const getMoreSuggestions = async (nextPage) => {
 
         return await Promise.resolve({ items, nextPage: nextPage });
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject([]);
     }
 }
@@ -719,7 +721,7 @@ export const getMoreComments = async (nextPage) => {
 
     if (!nextPage?.nextPageToken) return Promise.resolve(nextPage);
 
-    const endpoint = await `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
+    const endpoint = `${youtubeEndpoint}/youtubei/v1/next?key=${nextPage.nextPageToken}`;
     const items = [];
 
     try {
@@ -812,7 +814,7 @@ export const getMoreComments = async (nextPage) => {
 
         return await Promise.resolve({ items, nextPage: nextPage });
     } catch (ex) {
-        await console.error(ex);
+        console.error(ex);
         return await Promise.reject([]);
     }
 };
@@ -1253,7 +1255,7 @@ export async function getFeed(name) {
                     items,
                 });
 
-            } 
+            }
 
         })
 
@@ -1295,6 +1297,8 @@ export const GetHomeFeed = async () => {
     let contToken = '';
 
     const items = richGridRenderer.contents;
+
+//    return items;
 
     items.map((x) => {
 
