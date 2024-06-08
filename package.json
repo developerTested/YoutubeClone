@@ -4,8 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/serverApi/api.js -w src/serverApi/api.js",
-    "start": "NODE_ENV=production node src/serverApi/api.js",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },

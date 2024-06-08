@@ -21,7 +21,7 @@ export default function CommentCard({ comment }) {
                 <LazyLoadImage
                     wrapperClassName="w-full h-full rounded-full block bg-black/10"
                     className='block w-full h-full rounded-full object-cover'
-                    src={comment?.channel.avatar[comment?.channel.avatar.length - 1]?.url}
+                    src={comment?.channel?.avatar}
                     alt={comment?.channel?.title}
                 />
             </div>
@@ -77,7 +77,7 @@ export default function CommentCard({ comment }) {
                         <div className="label">{comment?.replyCount} replies</div>
                     </button>
                     <div className={replyClass}>
-                        {comment?.replies?.length ? comment?.replies.map((reply, i) => <CommentCard comment={reply} key={i} />) : ''}
+                        {comment?.replies.items?.length ? comment?.replies?.items?.map((reply, i) => <CommentCard comment={reply} key={i} />) : ''}
                     </div>
                     {showReply ? <button onClick={() => setShowReply(false)} className='cursor-pointer w-fit text-sm px-4 py-1 font-semibold flex items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-white/20'>
                         Hide replies
