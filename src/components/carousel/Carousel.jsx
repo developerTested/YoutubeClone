@@ -5,6 +5,7 @@ import ChannelVideoCard from "../channel/ChannelVideoCard";
 import ShortVideoCard from "../cards/ShortVideoCard";
 import GameCard from "../cards/GameCard";
 import AlbumCard from "../cards/AlbumCard";
+import MovieCard from "../cards/MovieCard";
 
 export default function Carousel({
     id,
@@ -64,7 +65,8 @@ export default function Carousel({
                 <ChannelVideoCard key={i} video={x} loading={loading} /> : x.type === 'reel' ? 
                 <ShortVideoCard key={i} video={x} loading={loading} /> : x.type === 'game' ? 
                 <GameCard video={x} key={i} loading={loading} />  : x.type === 'album' ? 
-                <AlbumCard video={x} key={i} loading={loading} /> : 
+                <AlbumCard video={x} key={i} loading={loading} /> : x.type === 'movie' ?  
+                <MovieCard video={x} key={i} loading={loading} />  :
                 <VideoCard key={i} video={x} loading={loading} />) : ''}
             </div>
             <button

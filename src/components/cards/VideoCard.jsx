@@ -40,19 +40,20 @@ export default function VideoCard({ video, loading = true }) {
         return <PlayListCard video={video} loading={false} />
     }
 
-    const thumbnails = video.id ? video.thumbnails : '';
+    const thumbnails = video.id ? video.thumbnails : [];
 
     return (
         <>
             <div className='relative w-full md:max-w-lg'>
                 <div className="relative pointer poster-img rounded-xl">
                     <Link to={`/watch/${video?.id}`} className={`block absolute inset-0 h-full md:max-h-60 rounded-xl overflow-hidden`}>
+                        {thumbnails ? 
                         <LazyLoadImage
                             wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
                             className="h-full w-full object-cover rounded-xl"
                             src={thumbnails[thumbnails.length - 1]?.url}
                             alt={video?.title}
-                        />
+                        /> : '' }
                     </Link>
                     {video?.length ? <VideoLength text={video?.length} /> : ''}
                 </div>

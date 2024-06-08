@@ -61,7 +61,7 @@ export default function FeedPage() {
         </div>
         <div className="flex flex-col gap-1">
           <div className="text-2xl font-medium line-clamp-2 dark:text-white">
-            {loading && !data?.title ? <h1 className='w-full h-8 animate-pulse'>Loading...</h1> : data?.title}
+            {loading ? <h1 className='w-full h-8 animate-pulse'>Loading...</h1> : data?.title || name.toUpperCase() }
           </div>
         </div>
       </div>
@@ -72,17 +72,16 @@ export default function FeedPage() {
 
           data && data?.items?.length ? <React.Fragment>
 
-
             {data?.items?.map((video, i) => <React.Fragment key={i}>
 
-
               {Array.isArray(video.items) ? <div key={i} className="grid-cols-full flex flex-col gap-2 shadow-md">
+                {video.title ? 
                 <div className="flex flex-col">
                   <h2 className="px-2 text-lg font-semibold">{video?.title}</h2>
                   {video.subtitle && <div className="px-2 text-sm font-normal">{video.subtitle}</div>}
-                </div>
+                </div> : '' }
 
-                {['shorts', 'games'].some((el) => video?.title?.toLowerCase()?.includes(el)) ? <Carousel card='shorts' loading={false} slides={video.items}></Carousel> :
+                {video?.title && ['shorts', 'games', 'movies', 'selling'].some((el) => video.title.toLowerCase()?.includes(el)) ? <Carousel card='shorts' loading={false} slides={video.items}></Carousel> :
                   <React.Fragment>
                     <div className={classNames("grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2", {
                       'lg:grid-cols-3': !miniMenu,
@@ -95,6 +94,8 @@ export default function FeedPage() {
                   </React.Fragment>
                 }
 
+
+             
               </div> : <VideoCard key={i} video={video} loading={false} />}
             </React.Fragment>)}
           </React.Fragment> : ''}

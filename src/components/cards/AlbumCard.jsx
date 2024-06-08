@@ -16,7 +16,7 @@ export default function AlbumCard({ video, loading = true }) {
                     <LazyLoadImage
                         wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
                         className="h-full w-full object-cover rounded-xl"
-                        src={thumbnails?.url ?? ''}
+                        src={thumbnail?.url || ''}
                         alt={video?.title}
                     />
                 </div> : ''}

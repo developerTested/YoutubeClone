@@ -17,7 +17,7 @@ export default function ShortVideoCard({ video = {}, loading = true }) {
                             <LazyLoadImage
                                 wrapperClassName="w-full h-full"
                                 className="h-full w-full object-cover rounded-lg"
-                                src={video?.thumbnails[0]?.url}
+                                src={video?.thumbnail?.url}
                                 alt={video?.title}
                             />
                         </Link>
