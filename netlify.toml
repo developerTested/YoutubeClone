@@ -6,4 +6,4 @@
     force = true
     from = "/api/*"
     status = 200
-    to = "/.netlify/functions/api/:splat"
+    to = "https://cheetube-api.netlify.app/api/:splat"
