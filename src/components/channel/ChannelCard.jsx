@@ -14,7 +14,7 @@ export default function ChannelCard({ channel }) {
                 <LazyLoadImage
                     wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
                     className="h-full w-full object-cover rounded-xl"
-                    src={channel?.avatar[channel?.avatar?.length - 1]?.url}
+                    src={channel?.avatar?.url}
                     alt={channel?.title}
                 />
             </Link>
@@ -25,7 +25,7 @@ export default function ChannelCard({ channel }) {
                             {channel?.title}
                         </Link>
                         <div className={`items-center flex ${channel?.description ? 'flex-row gap-2' : 'flex-col items-center justify-center'} text-xs stats text-gray-700 dark:text-white/70`}>
-                            <div className="channelId" block>@{channel?.id}</div>
+                            <div className="channelId block">@{channel?.id}</div>
                             <div className="subscribers">
                                 {channel?.subscriber}
                             </div>

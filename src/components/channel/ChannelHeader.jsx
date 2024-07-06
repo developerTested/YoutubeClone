@@ -61,7 +61,7 @@ export default function ChannelHeader({ data, ...props }) {
                                 wrapperClassName="w-full h-full object-cover rounded-full"
                                 className='rounded-full block w-full h-full object-cover'
                                 placeholderSrc='/img/1.jpg'
-                                src={data?.avatar[data.avatar.length - 1].url}
+                                src={data?.avatar?.url}
                                 alt={data?.title}
                             />
                         </div>

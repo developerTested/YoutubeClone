@@ -7,11 +7,11 @@ export default function AlbumCard({ video, loading = true }) {
         return <React.Fragment></React.Fragment>
     }
 
-    const thumbnails = video.thumbnails[0];
+    const thumbnail = video.thumbnails[0];
 
     return (
         <div className='flex gap-2 w-80 shrink-0'>
-            {thumbnails ?
+            {thumbnail ?
                 <div className="w-32 h-32 shrink-0">
                     <LazyLoadImage
                         wrapperClassName="w-full h-full block bg-black/10 rounded-xl"

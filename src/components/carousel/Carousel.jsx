@@ -25,7 +25,6 @@ export default function Carousel({
     const paginate = (items = slides, page = 1, perPage = 5) => {
         const offset = perPage * (page - 1);
         const totalPages = Math.ceil(items.length / perPage);
-        const paginatedItems = items.slice(offset, perPage * page);
 
         return {
             previousPage: page - 1 ? page - 1 : null,
@@ -54,13 +53,11 @@ export default function Carousel({
 
     };
 
-    /*
 
-*/
 
     return (
         <div className="relative p-1">
-            <div ref={gridRef} className={`grid ${['shorts'].includes(card) ? 'grid-flow-col overflow-hidden gap-4' : 'grid-cols-5'} px-4 snap-x snap-mandatory" gap-2 transition-all duration-500`}>
+            <div ref={gridRef} className={`grid ${['shorts'].includes(card) ? 'grid-flow-col overflow-hidden' : 'grid-cols-4'} px-4 snap-x snap-mandatory" gap-2 transition-all duration-500`}>
                 {slides.length ? slides.map((x, i) => x.type === 'channel' ? 
                 <ChannelVideoCard key={i} video={x} loading={loading} /> : x.type === 'reel' ? 
                 <ShortVideoCard key={i} video={x} loading={loading} /> : x.type === 'game' ? 

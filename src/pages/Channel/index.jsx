@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react'
 import Carousel from '../../components/carousel/Carousel';
 import ChannelHeader from '../../components/channel/ChannelHeader';
-import { useApp } from '../../contexts/contextApi';
 import { useParams } from 'react-router-dom';
 import YoutubeApi from '../../utilities/youtubeApi';
-import ChannelCard from '../../components/channel/ChannelCard';
+import { useApp } from '../../contexts/contextApi';
+import classNames from 'classnames';
+import FeedCard from '../../components/cards/FeedCard';
 
 export default function Channel() {
 
     const { id } = useParams();
 
     const [channel, setChannel] = useState(null);
-    const { loading, setLoading } = useApp();
+    const [loading, setLoading] = useState(true);
+    const { miniMenu } = useApp();
 
     const fetchData = async () => {
 
@@ -39,29 +41,41 @@ export default function Channel() {
 
 
     return (
-        <>
-            <div className="w-full transition-all"></div>
-            <ChannelHeader data={channel} />
+        <div className="w-full transition-all">
 
-            <div className="block min-w-0 overflow-hidden">
+            {loading ? 'Loading...' : <React.Fragment>
 
-                <div className="w-full">
-                    {channel ? channel.results && channel.results.length && channel.results.map((v, i) =>
+                <ChannelHeader data={channel} />
 
-                        <div key={i} className="relative block w-full">
-                            <h3 className='block text-lg my-2 px-4 py-2'>
-                                {v.title}
-                            </h3>
-                            <div className="block overflow-hidden min-w-0">
-                                {v.videos && v.videos.find((x) => x.type === 'channel' && x.description != null) ? v.videos && v.videos.filter((x) => x.type === 'channel').map((x) => <ChannelCard channel={x} />) : <Carousel id={v.title} slides={v.videos} card="channel" />}
-                            </div>
-                        </div>
-                    ) : ''}
+                <div className={`grid grid-cols-1 sm:grid-cols-2 ${miniMenu ? 'lg:grid-cols-3 xl:grid-cols-4' : 'lg:grid-cols-3'} gap-4 mt-4`}>
+
+                    {Array.isArray(channel.results) && channel.results?.map((v, i) => <React.Fragment key={i}>
+
+                        {Array.isArray(channel.results) ? <div key={i} className="grid-cols-full flex flex-col gap-2 shadow-md">
+                            {v.title ?
+                                <div className="flex flex-col">
+                                    <h2 className="px-2 text-lg font-semibold">{v?.title}</h2>
+                                    {v.subtitle && <div className="px-2 text-sm font-normal">{v.subtitle}</div>}
+                                </div> : ''}
+
+                            {v?.title && ['shorts', 'games', 'movies', 'selling'].some((el) => v.title.toLowerCase()?.includes(el)) ? <Carousel card='shorts' loading={false} slides={v.videos} /> :
+                                <React.Fragment>
+                                    <div className={classNames("grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2", {
+                                        'lg:grid-cols-3': !miniMenu,
+                                        'lg:grid-cols-3 xl:grid-cols-4': miniMenu,
+                                    })}>
+
+
+                                        {v?.videos?.map((video, i) => <FeedCard key={i} video={video} />)}
+
+                                    </div>
+                                </React.Fragment>
+                            }
+                        </div> : ''}
+                    </React.Fragment>)}
+
                 </div>
-                <div className="w-80">
-
-                </div>
-            </div>
-        </>
+            </React.Fragment>}
+        </div>
     )
 }

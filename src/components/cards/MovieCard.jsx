@@ -36,7 +36,7 @@ export default function MovieCard({ video = {}, loading = true }) {
                 {loading ? <div className="h-10"></div> : <>
                     <div className="views mb-4">{video?.category}</div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
                         {video?.badges?.length ? video?.badges?.map((x, i) => <div key={i} className="block rounded-md text-xs bg-slate-100 dark:bg-white/20 px-2 py-1">
                             {x}
                         </div>) : ''}

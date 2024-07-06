@@ -5,9 +5,7 @@ import { useParams } from 'react-router-dom';
 import VideoCard from '../components/cards/VideoCard';
 import Carousel from '../components/carousel/Carousel';
 import FeedCard from '../components/cards/FeedCard';
-import ChannelVideoCard from '../components/channel/ChannelVideoCard';
 import classNames from 'classnames';
-import ChannelCard from '../components/channel/ChannelCard';
 
 export default function FeedPage() {
   const { loading, setLoading, miniMenu } = useApp();
@@ -61,7 +59,7 @@ export default function FeedPage() {
         </div>
         <div className="flex flex-col gap-1">
           <div className="text-2xl font-medium line-clamp-2 dark:text-white">
-            {loading ? <h1 className='w-full h-8 animate-pulse'>Loading...</h1> : data?.title || name.toUpperCase() }
+            {loading ? <h1 className='w-full h-8 animate-pulse'>Loading...</h1> : data?.title || name.toUpperCase()}
           </div>
         </div>
       </div>
@@ -75,29 +73,29 @@ export default function FeedPage() {
             {data?.items?.map((video, i) => <React.Fragment key={i}>
 
               {Array.isArray(video.items) ? <div key={i} className="grid-cols-full flex flex-col gap-2 shadow-md">
-                {video.title ? 
-                <div className="flex flex-col">
-                  <h2 className="px-2 text-lg font-semibold">{video?.title}</h2>
-                  {video.subtitle && <div className="px-2 text-sm font-normal">{video.subtitle}</div>}
-                </div> : '' }
+                {video.title ?
+                  <div className="flex flex-col">
+                    <h2 className="px-2 text-lg font-semibold">{video?.title}</h2>
+                    {video.subtitle && <div className="px-2 text-sm font-normal">{video.subtitle}</div>}
+                  </div> : ''}
 
-                {video?.title && ['shorts', 'games', 'movies', 'selling'].some((el) => video.title.toLowerCase()?.includes(el)) ? <Carousel card='shorts' loading={false} slides={video.items}></Carousel> :
+
+                {Array.isArray(video?.items) && video.items.every(x => x.type === "game" || x.type === "music" || x.type === "movie" || x.type === "reel") ? <Carousel card='shorts' loading={false} slides={video.items} /> :
                   <React.Fragment>
                     <div className={classNames("grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2", {
                       'lg:grid-cols-3': !miniMenu,
                       'lg:grid-cols-3 xl:grid-cols-4': miniMenu,
                     })}>
 
-                      {video?.items?.map((video, i) => <FeedCard key={i} video={video} />)}
+                      {Array.isArray(video?.items) ? video?.items?.map((video, i) => <FeedCard key={i} video={video} />) : ''}
 
                     </div>
                   </React.Fragment>
                 }
 
-
-             
               </div> : <VideoCard key={i} video={video} loading={false} />}
-            </React.Fragment>)}
+            </React.Fragment>
+            )}
           </React.Fragment> : ''}
       </div>
     </div>

@@ -1,47 +1,21 @@
+import * as React from 'react'
 import classNames from 'classnames'
-import React from 'react'
 
-export default function Tooltip({ children, position = "bottom", title = "Tooltip" }) {
+export default function Tooltip({ children, position = 'bottom', title }) {
 
+    const tooltipClasses = classNames({
+        'bottom-full left-1/2 z-20 mb-3': position.includes('top'),
+        'left-1/2 top-full z-20 mt-3': position.includes('bottom'),
+        'right-full top-1/2 z-20 mr-3': position.includes('left'),
+        'left-full top-1/2 z-20 ml-3': position.includes('right'),
+    });
+    
     return (
-        <div id="tooltip" className="relative cursor-pointer group">
-            <div className="mx-2 my-1">{children}</div>
-            <span
-                className={classNames(
-                    "absolute hidden group-hover:block bg-neutral-900 text-white text-xs p-2 whitespace-nowrap rounded",
-                    position === "top"
-                        ? "left-1/2 -translate-x-1/2 bottom-[calc(100%+5px)]"
-                        : "",
-                    position === "bottom"
-                        ? "left-1/2 -translate-x-1/2 top-[calc(100%+5px)]"
-                        : "",
-                    position === "left"
-                        ? "top-1/2 -translate-y-1/2 right-[calc(100%+5px)]"
-                        : "",
-                    position === "right"
-                        ? "top-1/2 -translate-y-1/2 left-[calc(100%+5px)]"
-                        : ""
-                )}
-            >
+        <div className="group relative w-full h-full flex flex-col items-center justify-center transition-all ease-in-out">
+            {children}
+            <div className={`${tooltipClasses} absolute -translate-x-1/2 transition-all duration-200 whitespace-nowrap rounded bg-black px-4 py-[6px] text-sm font-semibold text-white scale-0 group-hover:scale-100 invisible group-hover:visible`}>
                 {title}
-            </span>
-            <div
-                className={classNames(
-                    "absolute hidden group-hover:block border-8",
-                    position === "top"
-                        ? "left-1/2 -translate-x-1/2 bottom-full border-l-transparent border-r-transparent border-b-0 border-t-neutral-900"
-                        : "",
-                    position === "bottom"
-                        ? "left-1/2 -translate-x-1/2 top-full border-l-transparent border-r-transparent border-t-0 border-b-neutral-900"
-                        : "",
-                    position === "left"
-                        ? "top-1/2 -translate-y-1/2 right-full border-t-transparent border-b-transparent border-r-0 border-l-neutral-900"
-                        : "",
-                    position === "right"
-                        ? "top-1/2 -translate-y-1/2 left-full border-t-transparent border-b-transparent border-l-0 border-r-neutral-900"
-                        : ""
-                )}
-            />
+            </div>
         </div>
     )
 }
