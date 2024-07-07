@@ -1,9 +1,8 @@
-[functions]
-    external_node_modules = ["express"]
-    node_bundler = "esbuild"
+[dev]
+    targetPort = 3000
+    port = 5173
 
 [[redirects]]
-    force = true
-    from = "/api/*"
+    from = "/*"
+    to = "/index.html"
     status = 200
-    to = "https://cheetube-api.netlify.app/api/:splat"
