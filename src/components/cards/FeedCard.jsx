@@ -6,10 +6,15 @@ import ChannelCard from '../channel/ChannelCard';
 import PostCard from './PostCard';
 import GameCard from './GameCard';
 import AlbumCard from './AlbumCard';
+import MovieCard from './MovieCard';
 
 export default function FeedCard({ video }) {
 
     const videoType = video.type?.toLowerCase();
+
+    if (['movie'].includes(videoType)) {
+        return <MovieCard video={video} loading={false} />
+    }
 
     if (['album'].includes(videoType)) {
         return <AlbumCard video={video} loading={false} />

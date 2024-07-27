@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { BsDownload, BsFillCheckCircleFill } from 'react-icons/bs';
-import { MdThumbDown, MdThumbUp } from 'react-icons/md';
+import { MdMusicNote, MdThumbDown, MdThumbUp } from 'react-icons/md';
 import { Link } from 'react-router-dom';
 import Dropdown from './Dropdown';
+import Avatar from './Avatar';
 
 export default function VideoDetails({ video = null, loading = true }) {
 
@@ -47,16 +48,19 @@ export default function VideoDetails({ video = null, loading = true }) {
 
             <div className="channel-details flex items-center gap-2">
                 <div className="channel flex gap-4 w-full">
-                    <div className="avatar shadow shrink-0">
-                        <img className="w-12 h-12 rounded-full" src={video?.channel?.avatar[video?.channel?.avatar.length - 1].url} alt="avatar" />
+                    <div className="avatar shrink-0">
+                        <Avatar src={video?.channel?.avatar?.url} alt={video?.channel?.title} rounded={true} />
                     </div>
                     <div className="flex items-center gap-4 w-full">
                         <div className="channel-info w-full md:w-auto flex items-center justify-between gap-4">
                             <div className="channel">
-                                <Link className='user font-bold text-gray-800 dark:text-white/70' to={video?.channel.url ?? video?.channel.channelId}>
+                                <Link className='flex items-center gap-2 user font-bold text-gray-800 dark:text-white/70' to={video?.channel.url ?? video?.channel.channelId}>
                                     {video?.channel?.title}
                                     {video?.channel?.verified && (
-                                        <BsFillCheckCircleFill className="text-white/[0.5] text-[12px] ml-1" />
+                                        <img src='/verified.svg' className='w-4 h-4 block' />
+                                    )}
+                                    {video?.channel?.artist && (
+                                        <MdMusicNote className='w-4 h-4 block' />
                                     )}
                                 </Link>
                                 <div className="subscriber block text-sm text-gray-800 dark:text-white/70">
@@ -127,7 +131,7 @@ export default function VideoDetails({ video = null, loading = true }) {
             </div>
 
 
-            {video?.player?.keywords &&
+            {video?.player?.keywords ?
                 <div className="keywords">
                     <h3>Keywords</h3>
                     <div className="flex flex-wrap items-center gap-1">
@@ -136,14 +140,15 @@ export default function VideoDetails({ video = null, loading = true }) {
                         </div>)}
                     </div>
                 </div>
-            }
+                : ''}
 
-            <div className="flex items-center gap-1">
-                <div className="">Posted in</div>
-                <div className="font-semibold">
-                    {video?.player?.category}
-                </div>
-            </div>
+            {video?.player?.category ?
+                <div className="flex items-center gap-1">
+                    <div className="">Posted in</div>
+                    <div className="font-semibold">
+                        {video?.player?.category}
+                    </div>
+                </div> : ''}
 
         </div>
     );

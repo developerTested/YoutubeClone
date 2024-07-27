@@ -5,6 +5,7 @@ import { BsBroadcast } from 'react-icons/bs';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import Avatar from '../Avatar';
 import PlayListCard from './PlayListCard';
+import { MdMusicNote } from 'react-icons/md';
 
 export default function VideoCard({ video, loading = true }) {
 
@@ -39,19 +40,16 @@ export default function VideoCard({ video, loading = true }) {
         return <PlayListCard video={video} loading={false} />
     }
 
-    const thumbnails = video.id ? video.thumbnails.pop() : [];
-
     return (
         <div className='relative w-full md:max-w-lg shrink-0'>
             <div className="relative pointer poster-img rounded-xl">
                 <Link to={`/watch/${video?.id}`} className={`block absolute inset-0 h-full md:max-h-60 rounded-xl overflow-hidden`}>
-                    {thumbnails ?
-                        <LazyLoadImage
-                            wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
-                            className="h-full w-full object-cover rounded-xl"
-                            src={thumbnails?.url}
-                            alt={video?.title}
-                        /> : ''}
+                    <LazyLoadImage
+                        wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
+                        className="h-full w-full object-cover rounded-xl"
+                        src={video?.thumbnail?.url}
+                        alt={video?.title}
+                    />
                 </Link>
                 {video?.length ? <VideoLength text={video?.length} /> : ''}
             </div>
@@ -74,6 +72,9 @@ export default function VideoCard({ video, loading = true }) {
                             {video?.channel?.title}
                             {video?.channel?.verified && (
                                 <img src='/verified.svg' className='w-4 h-4 block' />
+                            )}
+                            {video?.channel?.artist && (
+                                <MdMusicNote className='w-4 h-4 block' />
                             )}
                         </Link> : ''
                     }

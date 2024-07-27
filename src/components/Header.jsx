@@ -62,7 +62,7 @@ export default function Header(props) {
   }, [window.innerWidth]);
 
   return (
-    <div className='w-full fixed top-0 z-10 flex items-center justify-between h-14 px-4 md:px-5 bg-white dark:bg-black dark:text-white border-b dark:border-b-white/5'>
+    <div className='w-full fixed top-0 z-10 flex items-center justify-between h-14 px-4 md:px-5 bg-white dark:bg-black dark:text-white'>
       {loading && <Loader />}
       <div className={`flex items-center gap-3`}>
         <div className={`${watchPage ? 'watch md:flex' : 'md:hidden'}  flex cursor-pointer items-center justify-center w-10 h-10 rounded-full hover:bg-gray-200 dark:hover:bg-white/20 dark:text-white`}

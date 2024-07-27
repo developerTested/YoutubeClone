@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ChannelLinks from './ChannelLinks';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { MdMusicNote } from 'react-icons/md';
+import Avatar from '../Avatar';
 
 const menuItems = [
     {
@@ -30,44 +31,41 @@ const menuItems = [
     }
 ]
 
-export default function ChannelHeader({ data, ...props }) {
+export default function ChannelHeader({ data, loading, ...props }) {
 
     const [activeMenu, setActiveMenu] = useState('/');
 
-    if (!data) {
-        return;
-    }
-
     return (
         <>
-            <div className="relative flex flex-col shadow">
-                <div className="banner relative bg h-72 overflow-hidden object-cover">
-                    <LazyLoadImage
-                        wrapperClassName="block w-full h-full !bg-cover"
-                        className='block w-full h-full object-cover'
-                        placeholderSrc='/img/1.jpg'
-                        src={data?.banner && data?.banner[data?.banner?.length - 1].url}
+            <div className="relative flex flex-col">
+                <div className="banner relative bg h-72 overflow-hidden object-cover shadow">
+                    {loading ? <div className="block animate-pulse bg-gray-200 dark:bg-white/10 w-full h-full"></div> : data.banner ? <React.Fragment>
+                        <LazyLoadImage
+                            wrapperClassName="block w-full h-full !bg-cover"
+                            className='block w-full h-full object-cover'
+                            placeholderSrc='/img/1.jpg'
+                            src={data?.banner && data?.banner[data?.banner?.length - 1].url}
+                            alt={data?.title}
+                        />
+
+                        <div className="block w-auto h-10 px-4 absolute bottom-0 right-0">
+                            {loading ? <div className="w-full h-8 rounded bg-gray-200 dark:bg-white/10"></div> : <ChannelLinks data={data?.links} />}
+                        </div>
+                    </React.Fragment> : ''}
+                </div>
+                <div className='flex items-start justify-between gap-4 px-4 py-2'>
+                    <Avatar
+                        rounded
+                        className="shrink-0"
+                        size="large"
+                        src={data?.avatar?.url}
                         alt={data?.title}
                     />
+                    <div className="block space-y-2 w-full">
+                        {loading ? <div className="animate-pulse w-full h-12 rounded bg-gray-200 dark:bg-white/10"></div> :
 
-                    <div className="block w-auto h-10 px-4 absolute bottom-0 right-0">
-                        <ChannelLinks data={data?.links} />
-                    </div>
-                </div>
-                <div className='flex items-center justify-between px-4 py-2'>
-                    <div className="flex gap-4">
-                        <div className="avatar w-20 h-20 rounded-full flex shrink-0 items-center justify-center">
-                            <LazyLoadImage
-                                wrapperClassName="w-full h-full object-cover rounded-full"
-                                className='rounded-full block w-full h-full object-cover'
-                                placeholderSrc='/img/1.jpg'
-                                src={data?.avatar?.url}
-                                alt={data?.title}
-                            />
-                        </div>
-                        <div className="flex flex-col gap-1">
                             <div className="flex items-center gap-2">
-                                <div className="text-2xl">
+                                <div className="text-4xl font-bold">
                                     {data.title}
                                 </div>
                                 {data?.artist && (
@@ -77,13 +75,23 @@ export default function ChannelHeader({ data, ...props }) {
                                 {data?.verified && (
                                     <img src='/verified.svg' className='w-6 h-6 block' />
                                 )}
-                            </div>
-                            <div className='text-sm'>{data.id}</div>
+                            </div>}
+
+                        {loading ? <div className="animate-pulse w-full h-8 rounded bg-gray-200 dark:bg-white/10"></div> :
+                            <div className='text-lg font-semibold'>@{data.id}</div>}
+
+                        {loading ? <div className="animate-pulse w-full h-8 rounded bg-gray-200 dark:bg-white/10"></div> :
                             <div className="flex items-center gap-2">
                                 <div className='text-sm'>{data?.subscriber ?? '0 subscribers'}</div>
                                 <div className="block">•</div>
                                 <div className='text-sm'>{data?.videos ?? '0 videos'}</div>
-                            </div>
+                                <div className="block">•</div>
+                                <div className='text-sm'>{data?.joinAt}</div>
+                                <div className="block">•</div>
+                                <div className='text-sm'>{data?.views}</div>
+                            </div>}
+
+                        {loading ? <div className="animate-pulse w-full h-8 rounded bg-gray-200 dark:bg-white/10"></div> :
                             <div className="description">
                                 {data?.description && data?.description.length && data?.description.split('\n').map((x, i) =>
                                     <React.Fragment key={i}>
@@ -91,8 +99,7 @@ export default function ChannelHeader({ data, ...props }) {
                                         <br />
                                     </React.Fragment>
                                 )}
-                            </div>
-                        </div>
+                            </div>}
                     </div>
                 </div>
                 <div className="flex items-center">

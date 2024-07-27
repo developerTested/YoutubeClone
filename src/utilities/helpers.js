@@ -8,3 +8,17 @@ export function getInitials(inputName) {
 
     return initials;
 }
+
+export const pluralize = (word, count) => count === 1 ? word : word + 's';
+
+export function formatCompactNumber(number, text) {
+    const formatter = Intl.NumberFormat("en", { notation: "compact" });
+
+    const formatNum = formatter.format(number);
+    
+    if(text){
+        text = formatNum + " " + pluralize(text, number);
+    }
+
+    return text || formatter.format(number);
+}

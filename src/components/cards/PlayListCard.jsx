@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { BsDownload, BsFillCheckCircleFill } from 'react-icons/bs';
-import { MdPlaylistPlay } from 'react-icons/md';
+import { MdMusicNote, MdPlaylistPlay } from 'react-icons/md';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { Link } from 'react-router-dom';
 import VideoLength from '../VideoLength';
@@ -27,28 +27,29 @@ export default function PlayListCard({ video = {}, loading = true }) {
                     {video?.length && <div className="absolute bottom-0 left-0 right-0 px-3 py-1 w-full bg-black/80 text-white text-center flex items-center justify-between">
                         <div className="block"><MdPlaylistPlay className='w-6 h-6' /></div>
                         <div className="block text-sm text-center">
-                            {`${video?.length} videos`}
+                            {`${video?.length}`}
                         </div>
                     </div>}
                 </div>
-                <div className="details p-2 flex gap-4">
-                    <div className="avatar shrink-0">
-                        <Avatar
-                            src={video?.channel?.avatar && video?.channel?.avatar?.url}
-                            alt={video?.channel?.title}
-                            rounded={true}
-                        />
-                    </div>
-                    <div className="flex-1 info flex flex-col gap-y-1.5">
-                        <Link to={`/watch/${video?.id}`} className='text-sm font-semibold line-clamp-2'>
+                <div className="details p-2">
+                    <div className="block space-y-2">
+                        <Link to={`/watch/${video?.id}`} className='text-lg font-semibold line-clamp-2'>
                             {video?.title}
                         </Link>
+
+                        {video?.label &&
+                        <div className="text-xs text-gray-800 dark:text-white/70">
+                            {video.label}
+                        </div> }
 
                         {video?.channel &&
                             <Link to={video?.channel?.url} className='user text-xs text-gray-800 dark:text-white/70 flex items-center gap-2'>
                                 {video?.channel?.title}
                                 {video?.channel?.verified && (
                                     <img src='/verified.svg' className='w-4 h-4 block' />
+                                )}
+                                {video?.channel?.artist && (
+                                    <MdMusicNote className='w-4 h-4 block' />
                                 )}
                             </Link>
                         }

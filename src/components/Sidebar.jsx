@@ -199,8 +199,6 @@ export default function SideBar(props) {
             h-full 
             top-0 
             left-0
-            border-r
-            dark:border-r-white/5
             bg-white 
             dark:bg-black 
             dark:text-white 

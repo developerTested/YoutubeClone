@@ -8,7 +8,7 @@ import ShortVideoCard from '../cards/ShortVideoCard';
 
 export default function ChannelVideoCard({ video, loading = true, ...props }) {
 
-    if (loading && !video.id) {
+    if (loading && !video?.id) {
         return (
             <>
                 <div role="status" className={"relative rounded animate-pulse p-3" + props.className}>
@@ -36,7 +36,7 @@ export default function ChannelVideoCard({ video, loading = true, ...props }) {
                             <LazyLoadImage
                                 wrapperClassName="w-full h-full block bg-black/10 rounded-xl"
                                 className="h-full w-full object-cover rounded-xl"
-                                src={video.thumbnails[video.thumbnails.length - 1].url}
+                                src={video.thumbnail?.url}
                                 alt={video.title}
                             />
                         </Link>

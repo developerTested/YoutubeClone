@@ -80,11 +80,12 @@ export default function FeedPage() {
                   </div> : ''}
 
 
-                {Array.isArray(video?.items) && video.items.every(x => x.type === "game" || x.type === "music" || x.type === "movie" || x.type === "reel") ? <Carousel card='shorts' loading={false} slides={video.items} /> :
+                {Array.isArray(video?.items) && video.items.every(x => x.type === "game" || x.type === "music" || x.type === "reel") ? <Carousel card='shorts' loading={false} slides={video.items} /> :
                   <React.Fragment>
                     <div className={classNames("grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2", {
                       'lg:grid-cols-3': !miniMenu,
                       'lg:grid-cols-3 xl:grid-cols-4': miniMenu,
+                      'sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5': video.items.every(x => x.type === "movie")
                     })}>
 
                       {Array.isArray(video?.items) ? video?.items?.map((video, i) => <FeedCard key={i} video={video} />) : ''}

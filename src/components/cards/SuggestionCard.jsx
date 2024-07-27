@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import VideoLength from '../VideoLength';
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import { BsBroadcast } from 'react-icons/bs';
+import { MdMusicNote } from 'react-icons/md';
 
 export default function SuggestionCard({ video, loading = true }) {
 
@@ -37,21 +38,24 @@ export default function SuggestionCard({ video, loading = true }) {
                     <LazyLoadImage
                         wrapperClassName="w-full h-full block bg-black/10"
                         className='block w-full h-full'
-                        src={video?.thumbnails[0]?.url}
+                        src={video?.thumbnail?.url}
                         alt={video?.title}
                     />
                 </Link>
                 {video?.length && <VideoLength text={video?.length} />}
             </div>
-            <div className="flex flex-col gap-1 overflow-hidden">
+            <div className="block space-y-1 overflow-hidden">
                 <Link to={`/watch/${video?.id}`} className="text-sm lg:text-xs xl:text-sm font-semibold text-ellipsis line-clamp-2">
                     {video?.title}
                 </Link>
 
-                <Link to={video?.channel?.url} className="text-xs font-medium text-gray-700 dark:text-white/70 flex items-center gap-2">
-                    <div className="truncate">{video?.channel?.title}</div>
+                <Link to={video?.channel?.url} className="text-xs leading-normal text-gray-700 dark:text-white/70 flex items-center gap-2">
+                    <div className="truncate font-semibold">{video?.channel?.title}</div>
                     {video?.channel?.verified && (
                         <img src='/verified.svg' className='w-4 h-4 block' />
+                    )}
+                    {video?.channel?.artist && (
+                        <MdMusicNote className='w-4 h-4 block' />
                     )}
                 </Link>
 
