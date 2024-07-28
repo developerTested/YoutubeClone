@@ -3,6 +3,10 @@
     {
       "source": "/api/:path*",
       "destination": "https://cheetube-api.netlify.app/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
     }
   ]
 }
