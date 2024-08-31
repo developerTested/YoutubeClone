@@ -68,7 +68,7 @@ export default function FeedPage() {
 
         {loading ? Array.from(new Array(30)).map((_, i) => <VideoCard key={i} loading={true} />) :
 
-          data && data?.items?.length ? <React.Fragment>
+          data && data?.items && data?.items?.length ? <React.Fragment>
 
             {data?.items?.map((video, i) => <React.Fragment key={i}>
 

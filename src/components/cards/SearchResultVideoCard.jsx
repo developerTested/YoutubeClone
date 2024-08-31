@@ -5,6 +5,7 @@ import VideoLength from "../VideoLength";
 import { LazyLoadImage } from "react-lazy-load-image-component";
 import Avatar from "../Avatar";
 import { MdMusicNote } from "react-icons/md";
+import ChannelCard from "../channel/ChannelCard";
 
 export default function SearchResultVideoCard({ video }) {
 
@@ -29,7 +30,7 @@ export default function SearchResultVideoCard({ video }) {
 
     return (
         <>
-            {video?.type === 'channel' ? <>
+            {video?.type === 'channel' ?
                 <Link to={video?.url}>
                     <div className="flex flex-col md:flex-row gap-4 p-2 hover:bg-slate-100 dark:hover:bg-white/5">
 
@@ -56,7 +57,7 @@ export default function SearchResultVideoCard({ video }) {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="subscriber-btn rounded-full px-6 py-2 bg-black dark:bg-white dark:text-black text-white text-center">
+                                <div className="subscriber-btn rounded-full px-6 py-2 mr-4 bg-black dark:bg-white dark:text-black text-white text-center">
                                     Subscribe
                                 </div>
                             </div>
@@ -66,7 +67,7 @@ export default function SearchResultVideoCard({ video }) {
                         </div>
                     </div>
                 </Link>
-            </> :
+                :
                 <div className="flex flex-col md:flex-row gap-1 md:gap-4 rounded-md hover:bg-slate-100 dark:hover:bg-white/5">
                     <div className="relative shrink-0 h-full sm:h-40 md:h-36 lg:h-40 xl:h-48 w-full md:w-60 lg:w-64 xl:w-80">
                         <Link to={`/watch/${video?.id}`}>
