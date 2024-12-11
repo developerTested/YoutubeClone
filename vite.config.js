@@ -12,7 +12,7 @@ export default defineConfig(({ mode }) => {
       port: vite_port,
       proxy: {
         '/api': {
-          target: env.YOUTUBE_BACKEND_API || 'http://localhost:3001/api',
+          target: env.VITE_YOUTUBE_BACKEND_API || 'http://localhost:3001/api',
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
