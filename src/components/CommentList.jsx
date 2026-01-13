@@ -3,13 +3,13 @@ import InfiniteScroll from 'react-infinite-scroll-component'
 import CommentCard from './cards/CommentCard'
 import YoutubeApi from '../utilities/youtubeApi';
 
-export default function CommentList({ items, video, loading = true }) {
+export default function CommentList({ video, loading = true }) {
 
     if (!video || loading) {
         return <CommentSkeleton />
     }
 
-    const [comments, setComments] = useState(items);
+    const [comments, setComments] = useState([]);
     const [context, setContext] = useState(video.commentContext);
     const ref = useRef();
 
@@ -28,9 +28,18 @@ export default function CommentList({ items, video, loading = true }) {
         }
     }
 
+    useEffect(() => {
+
+        fetchComments()
+
+        return () => {
+            setComments([]);
+        }
+    }, [video?.id])
+
     return (
         <div ref={ref} className="relative w-full h-fit overflow-auto flex flex-col gap-2 divide-y dark:divide-white/20">
-            
+
             <h2 className='text-lg my-2 px-4 py-2'>{video?.comments?.text}</h2>
 
             {comments && comments.length ?

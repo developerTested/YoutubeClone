@@ -5,11 +5,8 @@ export default defineConfig(({ mode }) => {
 
   const env = loadEnv(mode, process.cwd(), '')
 
-  const vite_port = env.PORT || 3000;
-
   return {
     server: {
-      port: vite_port,
       proxy: {
         '/api': {
           target: env.VITE_YOUTUBE_BACKEND_API || 'http://localhost:3001/api',

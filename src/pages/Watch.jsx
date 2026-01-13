@@ -78,7 +78,7 @@ export default function WatchPage(props) {
                 <VideoDetails video={video} loading={loading} />
 
                 <div className="comment-container">
-                    <CommentList items={video?.comments?.items} video={video} loading={loading} />
+                    <CommentList video={video} loading={loading} />
                 </div>
             </div>
             <div className="shrink-0 flex flex-col lg:w-80 xl:w-96 relative">
@@ -96,7 +96,5 @@ export default function WatchPage(props) {
                 </div>
             </div>
         </div>
-
-
     );
 }

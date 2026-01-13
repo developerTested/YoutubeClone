@@ -27,17 +27,20 @@ export default function CommentCard({ comment }) {
             </div>
             <div className="w-full flex flex-col gap-1 item-center">
                 <div className="flex items-center gap-2">
-                    <Link to={comment?.channel?.url} className={`${comment?.isOwner ? 'bg-black/80 text-white rounded-full px-2 py-1' : ''} font-semibold flex items-center gap-2`}>
-                        <div className="block">
+                    <Link to={comment?.channel?.url} className={`${comment?.isOwner ? 'bg-black/80 text-white rounded-full px-2 py-1' : ''} font-semibold flex items-center gap-2 truncate`}>
+                        <div className="block truncate max-w-lg">
                             {comment?.channel?.title}
                         </div>
 
-                        {comment?.channel?.artist ?
-                            <MdMusicNote className='w-4 h-4 block' />
-                        :
-                        comment?.channel?.verified ?
-                            <img src='/verified.svg' className='w-4 h-4 block' />
-                         : ''}
+                        <div className="badge shrink-0">
+
+                            {comment?.channel?.artist ?
+                                <MdMusicNote className='w-4 h-4 block' />
+                                :
+                                comment?.channel?.verified ?
+                                    <img src='/verified.svg' className='w-4 h-4 block' />
+                                    : ''}
+                        </div>
 
                     </Link>
                     <div className="publish">{comment?.publishedAt}</div>
